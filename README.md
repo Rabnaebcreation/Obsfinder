@@ -1,2 +1,2 @@
-# redline_utils
+# RedlineUtils
 Repository containing scripts that can be used with the REDLINE program.
