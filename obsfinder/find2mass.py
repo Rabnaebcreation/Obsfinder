@@ -42,8 +42,8 @@ def get_obs(lvalue: float, bvalue: float, psize: float, path: str, proxy: tuple[
     query = f"SELECT j_m, j_msigcom, h_m, h_msigcom, k_m , k_msigcom, glon, glat \
              FROM fp_psc \
              WHERE \
-             glon BETWEEN {lvalue - psize / 2} AND {lvalue + psize / 2} \
-             AND glat BETWEEN {bvalue - psize / 2} AND {bvalue + psize / 2}"
+             glon BETWEEN {lvalue - psize} AND {lvalue + psize} \
+             AND glat BETWEEN {bvalue - psize} AND {bvalue + psize}"
 
     # Encode the query  
     params = urllib.urlencode({

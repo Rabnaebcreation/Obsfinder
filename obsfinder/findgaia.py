@@ -71,8 +71,8 @@ def get_obs(lvalue: float, bvalue: float, psize: float, path: str, proxy: tuple[
             l, b, parallax \
             FROM gaiadr3.gaia_source \
             WHERE \
-            gaiadr3.gaia_source.l BETWEEN {lvalue - psize / 2} AND {lvalue + psize / 2} AND \
-            gaiadr3.gaia_source.b BETWEEN {bvalue - psize / 2} AND {bvalue + psize / 2}"
+            gaiadr3.gaia_source.l BETWEEN {lvalue - psize} AND {lvalue + psize} AND \
+            gaiadr3.gaia_source.b BETWEEN {bvalue - psize} AND {bvalue + psize}"
 
     # Encode the query
     params = urllib.urlencode({\
@@ -215,10 +215,10 @@ def get_obs(lvalue: float, bvalue: float, psize: float, path: str, proxy: tuple[
     data1 = data1[~np.isnan(data1).any(axis=1)]
 
     # Name of the output file
-    filename = '{}/b_{:.6f}/{:.6f}/observations_gaia_{:.6f}_{:.6f}.cat_{:.6f}.bz2' \
+    filename = '{}/observations_gaia_{:.6f}_{:.6f}.cat_{:.6f}.bz2' \
             .format(path, bvalue, lvalue, bvalue, lvalue, psize)
     # Name of the output file
-    filename1 = '{}/b_{:.6f}/{:.6f}/observations_gaia_{:.6f}_{:.6f}_lim.cat_{:.6f}.bz2' \
+    filename1 = '{}/observations_gaia_{:.6f}_{:.6f}_lim.cat_{:.6f}.bz2' \
             .format(path, bvalue, lvalue, bvalue, lvalue, psize)
     
     # Save data
@@ -249,8 +249,5 @@ if __name__ == '__main__':
 
     # Arcminute to degree
     psize /= 60   
-
-    # Create output directory if not existing
-    os.makedirs('{}/b_{:.6f}/{:.6f}'.format(path, latt, long), exist_ok=True)
 
     get_obs(long, latt, psize, path, proxy = ("11.0.0.254",3142), verbose = verbose)
