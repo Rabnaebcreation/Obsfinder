@@ -25,3 +25,8 @@ The name of the output file have the following form:
 Both files are ASCII compressed file. They contains the following columns:
 - phot_g_n_obs, phot_g_mean_mag, phot_g_mean_flux, phot_g_mean_flux_error, ...
 - j_m, j_msigcom, h_m, h_mdiscom, j_m, j_msigcom, glon, glat
+ 
+ Sources with empty columns are automatically removed.
+
+> **Note** 
+> While ```find2mass.py``` is almost done, ```findgaia.py``` is not and will be updated frequently.

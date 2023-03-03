@@ -141,7 +141,7 @@ def get_obs(lvalue: float, bvalue: float, psize: float, path: str, proxy: tuple[
     data = data[(data['j_msigcom'] < 5.) | (data['h_msigcom'] < 5.) | (data['k_msigcom'] < 5.)]
 
     # Name of the output file
-    filename = '{}/b_{:.6f}/{:.6f}/observations_2mass_{:.6f}_{:.6f}.cat_{:.6f}.bz2' \
+    filename = '{}/observations_2mass_{:.6f}_{:.6f}.cat_{:.6f}.bz2' \
             .format(path, bvalue, lvalue, bvalue, lvalue, psize)
     
     # Save data
@@ -172,8 +172,5 @@ if __name__ == '__main__':
 
     # Arcminute to degree
     psize /= 60   
-
-    # Create output directory if not existing
-    os.makedirs('{}/b_{:.6f}/{:.6f}'.format(path, latt, long), exist_ok=True)
 
     get_obs(long, latt, psize, path, proxy = ("11.0.0.254",3142), verbose = verbose)
