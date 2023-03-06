@@ -1,6 +1,4 @@
-from astropy.coordinates import SkyCoord
 from xml.dom.minidom import parseString
-from astropy import units as u
 import http.client as httplib
 import urllib.parse as urllib
 import pandas as pd
@@ -8,7 +6,6 @@ import numpy as np
 import argparse
 import time
 import csv
-import os
 
 def get_obs(lvalue: float, bvalue: float, psize: float, path: str, proxy: tuple[str, int] = None, verbose: int = 1):
     """
@@ -26,7 +23,7 @@ def get_obs(lvalue: float, bvalue: float, psize: float, path: str, proxy: tuple[
         psize (float): 
             Pixel size (in degree)
         path (str): 
-            Working directory
+            Working directory and output file name
         proxy (tuple[str, int], optional):
             Proxy to use, if needed. Tuple containing the adresse of the proxy and the port to use. Default to None.
         verbose (int, optional): 
@@ -141,15 +138,15 @@ def get_obs(lvalue: float, bvalue: float, psize: float, path: str, proxy: tuple[
     data = data[(data['j_msigcom'] < 5.) | (data['h_msigcom'] < 5.) | (data['k_msigcom'] < 5.)]
 
     # Name of the output file
-    filename = '{}/observations_2mass_{:.6f}_{:.6f}.cat_{:.6f}.bz2' \
-            .format(path, bvalue, lvalue, bvalue, lvalue, psize)
+    # filename = '{}/observations_2mass_{:.6f}_{:.6f}.cat_{:.6f}.bz2' \
+    #         .format(path, bvalue, lvalue, psize)
     
     # Save data
-    np.savetxt(filename, data, fmt='%-10.4f')
+    np.savetxt(path, data, fmt='%-10.4f')
     if verbose:
         print('Done!')
         print(f"Nb sources: {len(data)}")
-        print(f"2MASS obs saved in {filename}")
+        print(f"2MASS obs saved in {path}")
 
 
 if __name__ == '__main__':
@@ -160,7 +157,7 @@ if __name__ == '__main__':
     parser.add_argument('-b', type = float, required = True, help = "Square center value in Galactic lattitude (deg)")
     parser.add_argument('-p', type = float, required = False, help = "Pixel size (arcminute)", default = 5)
     parser.add_argument('-v', type = int, required = False, help = "Verbose", default = 1)
-    parser.add_argument('-d', type = str, required = True, help = "Working directory")
+    parser.add_argument('-d', type = str, required = True, help = "Working directory and output file name")
 
     # Get arguments value
     args = parser.parse_args()

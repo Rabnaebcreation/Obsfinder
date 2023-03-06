@@ -1,11 +1,10 @@
+from xml.dom.minidom import parseString
 import http.client as httplib
 import urllib.parse as urllib
-import time
-from xml.dom.minidom import parseString
-import argparse
-import os
 import pandas as pd
 import numpy as np
+import argparse
+import time
 import csv
 
 def maglimList(data: np.ndarray, level: int, percentile: float) -> np.ndarray:
