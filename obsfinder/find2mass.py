@@ -1,3 +1,9 @@
+"""
+Warning !
+This script cannot do query for zones where longitude is negative !
+Example:
+for find2mass.py -l 0 -b 0 -p 60 -p path, le longitude range will be between 0 and 1 instead of 359 and 0
+"""
 from xml.dom.minidom import parseString
 import http.client as httplib
 import urllib.parse as urllib
@@ -104,7 +110,7 @@ def get_obs(lvalue: float, bvalue: float, psize: float, path: str, proxy: tuple[
             exit()
 
         # Wait and repeat
-        time.sleep(1.0)
+        time.sleep(0.2)
 
     connection.close()
 
@@ -142,7 +148,8 @@ def get_obs(lvalue: float, bvalue: float, psize: float, path: str, proxy: tuple[
     #         .format(path, bvalue, lvalue, psize)
     
     # Save data
-    np.savetxt(path, data, fmt='%-10.4f')
+    #np.savetxt(path, data, fmt='%-10.4f')
+    data.to_csv(path, float_format = '%.4f', index=False)
     if verbose:
         print('Done!')
         print(f"Nb sources: {len(data)}")

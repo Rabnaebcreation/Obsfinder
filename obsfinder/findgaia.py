@@ -1,3 +1,10 @@
+"""
+Warning !
+This script has not been tested for longitude range containing negative values !
+Example:
+for find2mass.py -l 0 -b 0 -p 60 -p path, le longitude range will be between 0 and 1 instead of 359 (-1) and 0
+"""
+
 from xml.dom.minidom import parseString
 import http.client as httplib
 import urllib.parse as urllib
@@ -67,7 +74,7 @@ def get_obs(lvalue: float, bvalue: float, psize: float, path: str, proxy: tuple[
     query = f"SELECT source_id, phot_g_n_obs, phot_g_mean_mag, phot_g_mean_flux, phot_g_mean_flux_error,\
             phot_bp_n_obs, phot_bp_mean_mag, phot_bp_mean_flux, phot_bp_mean_flux_error, \
             phot_rp_n_obs, phot_rp_mean_mag, phot_rp_mean_flux, phot_rp_mean_flux_error, \
-            l, b, parallax \
+            l, b, parallax, parallax_error \
             FROM gaiadr3.gaia_source \
             WHERE \
             gaiadr3.gaia_source.l BETWEEN {lvalue - psize} AND {lvalue + psize} AND \
@@ -174,18 +181,18 @@ def get_obs(lvalue: float, bvalue: float, psize: float, path: str, proxy: tuple[
     connection.close()
 
     # Make maglimList bolean list
-    maglim_list = maglimList(data, 5, 90)
+    # maglim_list = maglimList(data, 5, 90)
 
     # Convert job result in numpy array
-    data1 = np.transpose(np.array([data['phot_g_n_obs'][maglim_list], data['phot_g_mean_mag'][maglim_list], data['phot_g_mean_flux'][maglim_list], data['phot_g_mean_flux_error'][maglim_list], \
-                    data['phot_bp_n_obs'][maglim_list], data['phot_bp_mean_mag'][maglim_list], data['phot_bp_mean_flux'][maglim_list], data['phot_bp_mean_flux_error'][maglim_list], \
-                    data['phot_bp_n_obs'][maglim_list], data['phot_rp_mean_mag'][maglim_list], data['phot_rp_mean_flux'][maglim_list], data['phot_rp_mean_flux_error'][maglim_list], \
-                    data['l'][maglim_list], data['b'][maglim_list], data['parallax'][maglim_list]]))
+    # data1 = np.transpose(np.array([data['phot_g_n_obs'][maglim_list], data['phot_g_mean_mag'][maglim_list], data['phot_g_mean_flux'][maglim_list], data['phot_g_mean_flux_error'][maglim_list], \
+    #                 data['phot_bp_n_obs'][maglim_list], data['phot_bp_mean_mag'][maglim_list], data['phot_bp_mean_flux'][maglim_list], data['phot_bp_mean_flux_error'][maglim_list], \
+    #                 data['phot_bp_n_obs'][maglim_list], data['phot_rp_mean_mag'][maglim_list], data['phot_rp_mean_flux'][maglim_list], data['phot_rp_mean_flux_error'][maglim_list], \
+    #                 data['l'][maglim_list], data['b'][maglim_list], data['parallax'][maglim_list]]))
     
-    data = np.transpose(np.array([data['phot_g_n_obs'], data['phot_g_mean_mag'], data['phot_g_mean_flux'] ,data['phot_g_mean_flux_error'], \
-                data['phot_bp_n_obs'], data['phot_bp_mean_mag'], data['phot_bp_mean_flux'], data['phot_bp_mean_flux_error'], \
-                data['phot_rp_n_obs'], data['phot_rp_mean_mag'], data['phot_rp_mean_flux'], data['phot_rp_mean_flux_error'], \
-                data['l'], data['b'], data['parallax']]))
+    # data = np.transpose(np.array([data['phot_g_n_obs'], data['phot_g_mean_mag'], data['phot_g_mean_flux'] ,data['phot_g_mean_flux_error'], \
+    #             data['phot_bp_n_obs'], data['phot_bp_mean_mag'], data['phot_bp_mean_flux'], data['phot_bp_mean_flux_error'], \
+    #             data['phot_rp_n_obs'], data['phot_rp_mean_mag'], data['phot_rp_mean_flux'], data['phot_rp_mean_flux_error'], \
+    #             data['l'], data['b'], data['parallax']]))
 
     # # Convert job result in numpy array
     # data1 = np.transpose(np.array([data['phot_g_mean_mag'][maglim_list], data['phot_g_mean_flux'][maglim_list], data['phot_g_mean_flux_error'][maglim_list], \
@@ -211,18 +218,22 @@ def get_obs(lvalue: float, bvalue: float, psize: float, path: str, proxy: tuple[
 
     # Remove rows containing at least one nan value
     data = data[~np.isnan(data).any(axis=1)]
-    data1 = data1[~np.isnan(data1).any(axis=1)]
+    #data1 = data1[~np.isnan(data1).any(axis=1)]
 
     # Name of the output file
-    filename = '{}/observations_gaia_{:.6f}_{:.6f}.cat_{:.6f}.bz2' \
-            .format(path, bvalue, lvalue, bvalue, lvalue, psize)
+    filename = '{}/observations_gaia_{:.6f}_{:.6f}.cat_{:.6f}.csv' \
+            .format(path, bvalue, lvalue, psize)
     # Name of the output file
-    filename1 = '{}/observations_gaia_{:.6f}_{:.6f}_lim.cat_{:.6f}.bz2' \
-            .format(path, bvalue, lvalue, bvalue, lvalue, psize)
+    # filename1 = '{}/observations_gaia_{:.6f}_{:.6f}_lim.cat_{:.6f}.dat' \
+    #         .format(path, bvalue, lvalue, psize)
     
+    data.drop(columns=['source_id'], inplace=True,)
+    data.to_csv(filename, float_format = '%.4f', index=False)
+
     # Save data
-    np.savetxt(filename, data, fmt='%-10.4f')
-    np.savetxt(filename1, data1, fmt='%-10.4f')
+    #np.savetxt(filename, data, fmt='%-10.4f')
+
+    # np.savetxt(filename1, data1, fmt='%-10.4f')
     if verbose:
         print('Done!')
         print(f"Nb sources: {len(data)}")
