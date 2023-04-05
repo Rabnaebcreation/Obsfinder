@@ -37,14 +37,14 @@ setuptools.setup(
     version='0.1.0',
     author='Barnabé Déforêt',
     author_email='babedef@orange.fr',
-    description='Too to query 2mass and Gaia observatins',
+    description='Tools to query 2mass and Gaia observatins',
     long_description=long_description,
     long_description_content_type="text/markdown",
-    url='https://github.com/mike-huls/toolbox',
-    project_urls = {
-        "Bug Tracker": "https://github.com/mike-huls/toolbox/issues"
-    },
+    url='https://github.com/Rabnaebcreation/Obsfinder',
+    packages=['obsfinder'],
     license='MIT',
-    packages=['toolbox'],
-    install_requires=['requests'],
+    install_requires=[
+        "numpy>=1.20.3",
+        "pandas>=1.5.3",
+    ],
 )
