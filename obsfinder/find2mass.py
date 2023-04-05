@@ -1,3 +1,5 @@
+#!/usr/bin/env python3
+
 """
 Warning !
 This script cannot do query for zones where longitude is negative !

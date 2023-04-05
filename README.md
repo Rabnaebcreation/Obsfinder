@@ -28,5 +28,13 @@ Both files are ASCII compressed file. They contains the following columns:
  
  Sources with empty columns are automatically removed.
 
+## Installation
+```findgaia.py``` can be installed to be run from anywhere:
+```pip install -e```
+
+
 > **Note** 
-> While ```find2mass.py``` is almost done, ```findgaia.py``` is not and will be updated frequently.
+> ```find2mass.py``` do not work if the Zone center Galactic longitude is 0. Both program will be updated frequently.
+
+Update package:
+```python setup.py sdist upload```
