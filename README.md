@@ -1,5 +1,5 @@
-# Here is RedlineUtils
-This is a repository containing scripts that can be used with or without the REDLINE program (D.J Marshall).
+# Here is Obsfinder
+This is a repository containing tools to query observations catalogue from 2mass and Gaia.
 
 ## Available program
 For the moment, only 2 program can be used:
@@ -17,24 +17,24 @@ Both program work in the same way. Thay take as argments:
 Arguments can be placed in any order. Here is an example to get Gaia DR3 data for a zone center in longitude=45°, lattitude=1°, for a pixel zise of 5" and that save the data in the directory ```/home/user/data/```:
 ```python3 findgaia.py -l 45 -b 5 -p 5 -d /home/user/data/```
 
+```findgaia.py``` can also be directly called within a terminal:
+```findgaia -l 45 -b 5 -p 5 -d /home/user/data/```
+
 The name of the output file have the following form:
-- ```observations_gaia_{lattitude}_{longitude}_lim.cat_{size}.bz2``` with ```findgaia.py```
-- ```observations_2mass_{lattitude}_{longitude}_lim.cat_{size}.bz2``` with ```find2mass.py```
+- ```observations_gaia_{lattitude}_{longitude}_lim.cat_{size}.csv``` with ```findgaia.py```
+- ```observations_2mass_{lattitude}_{longitude}_lim.cat_{size}.csv``` with ```find2mass.py```
 
 ## Output file format
-Both files are ASCII compressed file. They contains the following columns:
+Both files are CSV file. They contains the following columns:
 - phot_g_n_obs, phot_g_mean_mag, phot_g_mean_flux, phot_g_mean_flux_error, ...
 - j_m, j_msigcom, h_m, h_mdiscom, j_m, j_msigcom, glon, glat
  
  Sources with empty columns are automatically removed.
 
 ## Installation
-```findgaia.py``` can be installed to be run from anywhere:
-```pip install -e```
+This package can by installed via pip:
+```pip install git+https://github.com/Rabnaebcreation/Obsfinder.git```
 
 
 > **Note** 
 > ```find2mass.py``` do not work if the Zone center Galactic longitude is 0. Both program will be updated frequently.
-
-Update package:
-```python setup.py sdist upload```

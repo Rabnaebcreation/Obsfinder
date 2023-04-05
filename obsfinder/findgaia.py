@@ -15,7 +15,7 @@ class Findgaia():
     This class contains tools to query the Gaia archive and retreive data from Gaia DR3.
     """
     
-    def __init__(self, lvalue: float, bvalue: float, path: str, psize: float, proxy: tuple[str, int] = None, verbose: int = 0) -> None:
+    def __init__(self, lvalue: float, bvalue: float, path: str, psize: float, proxy: tuple[str, int] = None, verbose: int = 0, name: str = None) -> None:
         """
         Initialize the class
 
@@ -32,6 +32,8 @@ class Findgaia():
                 Proxy to use, if needed. Tuple containing the adresse of the proxy and the port to use. Default to None.
             verbose (int, optional): 
                 Toggle verbose (1 or 0). Default to 0.
+            name (str, optional):
+                Name of the catalog. Default name is 'observations_gaia_{bvalue}_{lvalue}.cat_{psize}.csv'
         """
 
         self.host = "gea.esac.esa.int"
@@ -49,6 +51,7 @@ class Findgaia():
         self.psize = psize / 60
         self.proxy = proxy
         self.verbose = verbose
+        self.filename = name
 
         self.catalog = ""
 
@@ -224,13 +227,13 @@ class Findgaia():
             data (pd.DataFrame): Data to save
         """
 
-        # Name of the output file
-        filename = '{}/observations_gaia_{:.6f}_{:.6f}.cat_{:.6f}.csv' \
-                .format(self.path, self.bvalue, self.lvalue, self.psize)
-        # Name of the output file
-        
+        if self.filename == None:
+            # Name of the output file
+            self.filename = 'observations_gaia_{:.6f}_{:.6f}.cat_{:.6f}.csv' \
+                    .format(self.bvalue, self.lvalue, self.psize)
+            
         data.drop(columns=['source_id'], inplace=True,)
-        data.to_csv(filename, float_format = '%.4f', index=False)
+        data.to_csv(f"{self.path}/{self.filename}", float_format = '%.4f', index=False)
 
         # Save data
         #np.savetxt(filename, data, fmt='%-10.4f')
@@ -238,7 +241,7 @@ class Findgaia():
         if self.verbose:
             print('Done!')
             print(f"Nb sources: {len(data)}")
-            print(f"Gaia obs saved in {filename}")
+            print(f"Gaia obs saved in {self.path}{self.filename}")
 
     def maglimList(data: np.ndarray, level: int, percentile: float) -> np.ndarray:
         """
@@ -305,6 +308,7 @@ def main() -> int:
     parser.add_argument('-p', type = float, required = False, help = "Pixel size (arcminute)", default = 5)
     parser.add_argument('-v', type = int, required = False, help = "Verbose", default = 1)
     parser.add_argument('-d', type = str, required = True, help = "Working directory")
+    parser.add_argument('-n', type = str, required = False, help = "Name of the output file")
 
     # Get arguments value
     args = parser.parse_args()
@@ -313,8 +317,9 @@ def main() -> int:
     psize = args.p
     verbose = args.v
     path = args.d
+    name = args.n
 
-    fgaia = Findgaia(long, latt, path, psize, proxy = ("11.0.0.254",3142), verbose = verbose)
+    fgaia = Findgaia(long, latt, path, psize, proxy = ("11.0.0.254",3142), verbose = verbose, name = name)
     fgaia.get_obs()
 
     return 0
