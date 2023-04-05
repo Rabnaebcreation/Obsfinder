@@ -53,9 +53,7 @@ class Findgaia():
         self.verbose = verbose
         self.filename = name
 
-        self.catalog = ""
-
-    def query_obs(self, lmin, lmax) -> pd.DataFrame:
+    def query_obs(self, lmin: float, lmax: float) -> pd.DataFrame:
         """
         Make a query to gaia archive to retreive gaia flux in G, B and R bands
         and their uncertainty, as well as the longitude and lattitude of each
@@ -64,18 +62,10 @@ class Findgaia():
         coordinates (lvalue, bvalue).
 
         Args:
-            lvalue (float): 
-                Square center value in longitude (in degree)
-            bvalue (float): 
-                Square center value in lattitude (in degree)
-            psize (float): 
-                Pixel size (in degree)
-            path (str): 
-                Working directory
-            proxy (tuple[str, int], optional):
-                Proxy to use, if needed. Tuple containing the adresse of the proxy and the port to use. Default to None.
-            verbose (int, optional): 
-                Toggle verbose (1 or 0). Default to 0.
+            lmin (float): 
+                Square left value in longitude (in degree)
+            lmax (float):
+                Square right value in longitude (in degree)
 
         Returns:
             pd.DataFrame: Dataframe containing the data
@@ -85,8 +75,6 @@ class Findgaia():
                  gaiadr3.gaia_source.b BETWEEN {self.bvalue - self.psize} AND {self.bvalue + self.psize}"
             
         query = self.query + zone
-
-        print(query)
 
         # Encode the query
         params = urllib.urlencode({\

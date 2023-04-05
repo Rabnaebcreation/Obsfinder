@@ -34,7 +34,3 @@ Both files are CSV file. They contains the following columns:
 ## Installation
 This package can by installed via pip:
 ```pip install git+https://github.com/Rabnaebcreation/Obsfinder.git```
-
-
-> **Note** 
-> ```find2mass.py``` do not work if the Zone center Galactic longitude is 0. Both program will be updated frequently.
