@@ -27,8 +27,8 @@ The name of the output file have the following form:
 
 ## Output file format
 Both files are CSV file. They contains the following columns:
-- 2mass: phot_g_n_obs, phot_g_mean_mag, phot_g_mean_flux, phot_g_mean_flux_error, ...
-- Gaia: j_m, j_msigcom, h_m, h_mdiscom, j_m, j_msigcom, glon, glat
+- Gaia: phot_g_n_obs, phot_g_mean_mag, phot_g_mean_flux, phot_g_mean_flux_error, ...
+- 2mass: j_m, j_msigcom, h_m, h_mdiscom, j_m, j_msigcom, glon, glat
  
  Sources with empty columns are automatically removed.
 
