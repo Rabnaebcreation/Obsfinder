@@ -69,7 +69,7 @@ class Find2mass():
         """
 
         zone = f"glon BETWEEN {lmin} AND {lmax} \
-                 AND glat BETWEEN {self.bvalue - self.psize} AND {self.bvalue + self.psize}"
+                 AND glat BETWEEN {self.bvalue - self.psize/2} AND {self.bvalue + self.psize/2}"
             
         query = self.query + zone
 
@@ -79,8 +79,6 @@ class Find2mass():
         "FORMAT":  "csv", \
         "PHASE":  "RUN", \
         })
-
-        print(params)
 
         # Use proxy if needed
         if self.proxy != None:
@@ -94,8 +92,6 @@ class Find2mass():
 
         #Status
         response = connection.getresponse()
-
-        print(response.read())
 
         if self.verbose:
             print ("Status: " +str(response.status), "Reason: " + str(response.reason))
@@ -139,7 +135,7 @@ class Find2mass():
                 exit()
 
             #wait and repeat
-            time.sleep(0.2)
+            time.sleep(1.0)
 
         connection.close()
 
@@ -220,18 +216,18 @@ class Find2mass():
         """
 
         # If zone definition is not in [0, 360]
-        if self.lvalue - self.psize < 0:
+        if self.lvalue - (self.psize/2) < 0:
             if self.verbose:
                 print("Query split in two parts")
 
-            data_part1 = self.query_obs(360 + (self.lvalue - self.psize), 360)
-            data_part2 = self.query_obs(0, self.lvalue + self.psize)
+            data_part1 = self.query_obs(360 + (self.lvalue - self.psize/2), 360)
+            data_part2 = self.query_obs(0, self.lvalue + self.psize/2)
 
             data = pd.concat([data_part1, data_part2], ignore_index=True)
 
         # If zone definition is in the range [0, 360]
         else:
-            data = self.query_obs(self.lvalue - self.psize, self.lvalue + self.psize)
+            data = self.query_obs(self.lvalue - self.psize/2, self.lvalue + self.psize/2)
 
         # Clean observations
         data = self.clean_obs(data)

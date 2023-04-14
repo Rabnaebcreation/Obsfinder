@@ -72,7 +72,7 @@ class Findgaia():
         """
 
         zone = f"gaiadr3.gaia_source.l BETWEEN {lmin} AND {lmax} AND \
-                 gaiadr3.gaia_source.b BETWEEN {self.bvalue - self.psize} AND {self.bvalue + self.psize}"
+                 gaiadr3.gaia_source.b BETWEEN {self.bvalue - self.psize/2} AND {self.bvalue + self.psize/2}"
             
         query = self.query + zone
 
@@ -265,18 +265,18 @@ class Findgaia():
         """
 
         # If zone definition is not in [0, 360]
-        if self.lvalue - self.psize < 0:
+        if self.lvalue - (self.psize/2) < 0:
             if self.verbose:
                 print("Query split in two parts")
 
-            data_part1 = self.query_obs(360 + (self.lvalue - self.psize), 360)
-            data_part2 = self.query_obs(0, self.lvalue + self.psize)
+            data_part1 = self.query_obs(360 + (self.lvalue - self.psize/2), 360)
+            data_part2 = self.query_obs(0, self.lvalue + self.psize/2)
 
             data = pd.concat([data_part1, data_part2], ignore_index=True)
 
         # If zone definition is in the range [0, 360]
         else:
-            data = self.query_obs(self.lvalue - self.psize, self.lvalue + self.psize)
+            data = self.query_obs(self.lvalue - self.psize/2, self.lvalue + self.psize/2)
 
         # Clean observations
         data = self.clean_obs(data)
