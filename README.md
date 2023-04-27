@@ -22,13 +22,13 @@ Arguments can be placed in any order. Here is an example to get Gaia DR3 data fo
 ```findgaia -l 45 -b 5 -p 5 -d /home/user/data/```
 
 The name of the output file have the following form:
-- ```observations_gaia_{lattitude}_{longitude}.cat_{size}.csv``` with ```findgaia.py```
-- ```observations_2mass_{lattitude}_{longitude}.cat_{size}.csv``` with ```find2mass.py```
+- ```observations_gaia_{latitude}_{longitude}.cat_{size}.csv``` with ```findgaia.py```
+- ```observations_2mass_{latitude}_{longitude}.cat_{size}.csv``` with ```find2mass.py```
 
 ## Output file format
 Both files are CSV file. They contains the following columns:
-- Gaia: phot_g_n_obs, phot_g_mean_mag, phot_g_mean_flux, phot_g_mean_flux_error, ...
-- 2mass: j_m, j_msigcom, h_m, h_mdiscom, j_m, j_msigcom, glon, glat
+- Gaia: G, G_err, BP, BP_err, RP, RP_err, l, b
+- 2mass: J, J_err_, H_m, H_err, J_m, J_err, l, b
  
  Sources with empty columns are automatically removed.
 
