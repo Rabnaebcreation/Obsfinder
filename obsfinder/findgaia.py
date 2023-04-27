@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 
+from pygaia.errors.photometric import magnitude_uncertainty
 from xml.dom.minidom import parseString
 import http.client as httplib
 import urllib.parse as urllib
@@ -39,12 +40,18 @@ class Findgaia():
         self.host = "gea.esac.esa.int"
         self.port = 443
         self.pathinfo = "/tap-server/tap/async"
-        self.query = "SELECT source_id, phot_g_n_obs, phot_g_mean_mag, phot_g_mean_flux, phot_g_mean_flux_error,\
-            phot_bp_n_obs, phot_bp_mean_mag, phot_bp_mean_flux, phot_bp_mean_flux_error, \
-            phot_rp_n_obs, phot_rp_mean_mag, phot_rp_mean_flux, phot_rp_mean_flux_error, \
-            l, b, parallax, parallax_error \
-            FROM gaiadr3.gaia_source \
-            WHERE "
+        self.query = "SELECT phot_g_mean_mag, phot_g_mean_flux_over_error,\
+                phot_bp_mean_mag, phot_bp_mean_flux_over_error, \
+                phot_rp_mean_mag, phot_rp_mean_flux_over_error, \
+                l, b \
+                FROM gaiadr3.gaia_source \
+                WHERE "
+        # self.query = "SELECT source_id, phot_g_n_obs, phot_g_mean_mag, phot_g_mean_flux, phot_g_mean_flux_error,\
+        #     phot_bp_n_obs, phot_bp_mean_mag, phot_bp_mean_flux, phot_bp_mean_flux_error, \
+        #     phot_rp_n_obs, phot_rp_mean_mag, phot_rp_mean_flux, phot_rp_mean_flux_error, \
+        #     l, b, parallax, parallax_error \
+        #     FROM gaiadr3.gaia_source \
+        #     WHERE "
         self.lvalue = lvalue
         self.bvalue = bvalue
         self.path = path
@@ -169,10 +176,10 @@ class Findgaia():
         data = list((csv.reader(data, delimiter=',')))
         data = pd.DataFrame(data[1:], columns = data[0])
         data = data.replace(r'^\s*$', np.nan, regex=True)
-        data_temp = data['source_id'].astype(int)
+        # data_temp = data['source_id'].astype(int)
         data = data.astype(float)
-        data['source_id'] = data_temp
-        del data_temp
+        # data['source_id'] = data_temp
+        # del data_temp
 
         connection.close()
 
@@ -220,16 +227,16 @@ class Findgaia():
             self.filename = 'observations_gaia_{:.6f}_{:.6f}.cat_{:.6f}.csv' \
                     .format(self.bvalue, self.lvalue, self.psize)
             
-        data.drop(columns=['source_id'], inplace=True,)
-        data.to_csv(f"{self.path}/{self.filename}", float_format = '%.4f', index=False)
+        #data.drop(columns=['source_id'], inplace=True,)
+        #data.to_csv(f"{self.path}/{self.filename}", float_format = '%.4f', index=False)
 
         # Save data
-        #np.savetxt(filename, data, fmt='%-10.4f')
+        np.savetxt(self.filename, data, fmt='%-10.4f')
 
         if self.verbose:
             print('Done!')
             print(f"Nb sources: {len(data)}")
-            print(f"Gaia obs saved in {self.path}{self.filename}")
+            print(f"Gaia obs saved in {self.filename}")
 
     def maglimList(data: np.ndarray, level: int, percentile: float) -> np.ndarray:
         """
@@ -259,6 +266,45 @@ class Findgaia():
 
         return output
     
+    def mag_uncertainty(self, flux_over_error: float) -> float:
+        """
+        Compute the uncertainty on the magnitude given the flux, its uncertainty and the zero point uncertainty.
+        Args:
+            flux_over_error (float): flux over its error
+
+        Returns:
+            float: uncertainty on the magnitude
+        """
+
+        # return np.sqrt((-2.5 / np.log(10) * flux_err / flux)**2 + zero_point_err**2)
+        return (2.5/np.log(10)) * (1/flux_over_error)
+    
+    def attach_mag_uncertainty(self, data: pd.DataFrame) -> pd.DataFrame:
+        """
+        Attach the uncertainty on the magnitudes to the observationnal data
+
+        Args:
+            data (pd.DataFrame): Data to attach the uncertainty on the magnitudes for each band
+        
+        Returns:
+            pd.DataFrame: Data with the uncertainty on the magnitudes for each band
+        """
+
+        if self.verbose:
+            print("Attaching magnitude uncertainty to each band...")
+
+        # Compute the uncertainty on the magnitude
+        data['phot_g_mean_flux_over_error'] = self.mag_uncertainty(data['phot_g_mean_flux_over_error'])
+        data['phot_bp_mean_flux_over_error'] = self.mag_uncertainty(data['phot_bp_mean_flux_over_error'])
+        data['phot_rp_mean_flux_over_error'] = self.mag_uncertainty(data['phot_rp_mean_flux_over_error'])
+
+        data.rename(columns={'phot_g_mean_flux_over_error': 'phot_g_mean_mag_error', \
+                            'phot_bp_mean_flux_over_error': 'phot_bp_mean_mag_error', \
+                            'phot_rp_mean_flux_over_error': 'phot_rp_mean_mag_error'}, inplace=True)
+
+        return data
+        
+    
     def get_obs(self) -> None:
         """
         Complete function to get the observationnal data
@@ -281,6 +327,9 @@ class Findgaia():
         # Clean observations
         data = self.clean_obs(data)
 
+        # Attach magnitudes uncertainties
+        data = self.attach_mag_uncertainty(data)
+
         # Save observations
         self.save_obs(data)
         
@@ -295,7 +344,7 @@ def main() -> int:
     parser.add_argument('-b', type = float, required = True, help = "Square center value in Galactic lattitude (deg)")
     parser.add_argument('-p', type = float, required = False, help = "Pixel size (arcminute)", default = 5)
     parser.add_argument('-v', type = int, required = False, help = "Verbose", default = 1)
-    parser.add_argument('-d', type = str, required = True, help = "Working directory")
+    parser.add_argument('-d', type = str, required = False, help = "Working directory")
     parser.add_argument('-n', type = str, required = False, help = "Name of the output file")
 
     # Get arguments value
