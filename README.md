@@ -12,7 +12,7 @@ Both program work in the same way. Thay take as argments:
 - REQUIRED: Zone center Galactic lattitude (in degree). Should be contained between -90 and 90. Argument: ```-b```.
 - REQUIRED: Directory on whish the data will be saved. Argument: ```-d```.
 - OPTIONAL: Pixel size, i.e size of the zone of interest (in arcminute). Argument: ```-p```. Default to 5.
-- OPTIONAL: Show information (verbose). Argument: ```-v```. Should be 1 or 0. Default to 1.
+- OPTIONAL: Show information (verbose). Argument: ```-v```. Should be 1 or 0. Default to 0.
 - OPTIONAL : Name of the catalog. Argument: ```-n```. Default to "observations_2mass_{bvalue}_{lvalue}.cat_{psize}.csv"
 
 Arguments can be placed in any order. Here is an example to get Gaia DR3 data for a zone center in longitude=45°, lattitude=1°, for a pixel zise of 5" and that save the data in the directory ```/home/user/data/```:

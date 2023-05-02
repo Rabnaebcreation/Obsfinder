@@ -236,7 +236,8 @@ class Findgaia():
         if self.verbose:
             print('Done!')
             print(f"Nb sources: {len(data)}")
-            print(f"Gaia obs saved in {self.filename}")
+        
+        print(f"Gaia obs saved in {self.filename}")
 
     def maglimList(data: np.ndarray, level: int, percentile: float) -> np.ndarray:
         """
@@ -343,7 +344,7 @@ def main() -> int:
     parser.add_argument('-l', type = float, required = True, help = "Square center value in Galactic longitude (deg)")
     parser.add_argument('-b', type = float, required = True, help = "Square center value in Galactic lattitude (deg)")
     parser.add_argument('-p', type = float, required = False, help = "Pixel size (arcminute)", default = 5)
-    parser.add_argument('-v', type = int, required = False, help = "Verbose", default = 1)
+    parser.add_argument('-v', type = int, required = False, help = "Verbose", default = 0)
     parser.add_argument('-d', type = str, required = False, help = "Working directory")
     parser.add_argument('-n', type = str, required = False, help = "Name of the output file")
 

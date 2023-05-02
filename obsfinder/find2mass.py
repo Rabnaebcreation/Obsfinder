@@ -199,15 +199,16 @@ class Find2mass():
             self.filename = 'observations_2mass_{:.6f}_{:.6f}.cat_{:.6f}.csv' \
                     .format(self.bvalue, self.lvalue, self.psize)
             
-        data.to_csv(f"{self.path}/{self.filename}", float_format = '%.4f', index=False)
+        #data.to_csv(f"{self.path}/{self.filename}", float_format = '%.4f', index=False)
 
         # Save data
-        #np.savetxt(filename, data, fmt='%-10.4f')
+        np.savetxt(self.filename, data, fmt='%-10.4f')
 
         if self.verbose:
             print('Done!')
             print(f"Nb sources: {len(data)}")
-            print(f"2mass obs saved in {self.path}{self.filename}")
+
+        print(f"2mass obs saved in {self.path}{self.filename}")
 
     
     def get_obs(self) -> None:
@@ -245,8 +246,8 @@ def main() -> int:
     parser.add_argument('-l', type = float, required = True, help = "Square center value in Galactic longitude (deg)")
     parser.add_argument('-b', type = float, required = True, help = "Square center value in Galactic lattitude (deg)")
     parser.add_argument('-p', type = float, required = False, help = "Pixel size (arcminute)", default = 5)
-    parser.add_argument('-v', type = int, required = False, help = "Verbose", default = 1)
-    parser.add_argument('-d', type = str, required = True, help = "Working directory")
+    parser.add_argument('-v', type = int, required = False, help = "Verbose", default = 0)
+    parser.add_argument('-d', type = str, required = False, help = "Working directory")
     parser.add_argument('-n', type = str, required = False, help = "Name of the output file")
 
     # Get arguments value
