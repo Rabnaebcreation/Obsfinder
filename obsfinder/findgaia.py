@@ -212,6 +212,8 @@ class Findgaia():
         # Remove rows containing at least one nan value
         data = data[~np.isnan(data).any(axis=1)]
 
+        data = data[(data['phot_g_mean_mag'] > 8) & (data['phot_g_mean_mag'] < 17) & (data['phot_bp_mean_mag'] > 8) & (data['phot_bp_mean_mag'] < 17) & (data['phot_rp_mean_mag'] > 8) & (data['phot_rp_mean_mag'] < 17)]
+
         return data
 
     def save_obs(self, data: pd.DataFrame) -> None:
