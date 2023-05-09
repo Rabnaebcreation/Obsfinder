@@ -16,6 +16,9 @@ setuptools.setup(
         'console_scripts': [
             'findgaia = obsfinder.findgaia:main',
         ],
+        'console_scripts': [
+            'newfind2mass = obsfinder.find2mass:main',
+        ],
     },
     packages=['obsfinder'],
     license='MIT',

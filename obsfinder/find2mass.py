@@ -249,8 +249,8 @@ def main() -> int:
     parser.add_argument('-b', type = float, required = True, help = "Square center value in Galactic lattitude (deg)")
     parser.add_argument('-p', type = float, required = False, help = "Pixel size (arcminute)", default = 5)
     parser.add_argument('-v', type = int, required = False, help = "Verbose", default = 0)
-    parser.add_argument('-d', type = str, required = False, help = "Working directory")
-    parser.add_argument('-n', type = str, required = False, help = "Name of the output file")
+    parser.add_argument('-d', type = str, required = False, help = "Working directory", default = '')
+    parser.add_argument('-n', type = str, required = False, help = "Name of the output file", default = None)
 
     # Get arguments value
     args = parser.parse_args()
