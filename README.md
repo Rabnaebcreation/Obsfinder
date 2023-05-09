@@ -20,6 +20,8 @@ Arguments can be placed in any order. Here is an example to get Gaia DR3 data fo
 
 ```findgaia.py``` can also be directly called within a terminal:
 ```findgaia -l 45 -b 5 -p 5 -d /home/user/data/```
+The same stand for ```find2mass.py```:
+```newfind2mass -l 45 -b 5 -p 5 -d /home/user/data/```
 
 The name of the output file have the following form:
 - ```observations_gaia_{latitude}_{longitude}.cat_{size}.csv``` with ```findgaia.py```
