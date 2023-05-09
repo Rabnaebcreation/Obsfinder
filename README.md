@@ -10,12 +10,12 @@ For the moment, only 2 program can be used:
 Both program work in the same way. Thay take as argments:
 - REQUIRED: Zone center Galactic longitude (in degree). Should be contained between 0 and 360. Argument: ```-l```.
 - REQUIRED: Zone center Galactic lattitude (in degree). Should be contained between -90 and 90. Argument: ```-b```.
-- REQUIRED: Directory on whish the data will be saved. Argument: ```-d```.
+- OPTIONAL: Directory on whish the data will be saved. Argument: ```-d```. Empty by default.
 - OPTIONAL: Pixel size, i.e size of the zone of interest (in arcminute). Argument: ```-p```. Default to 5.
 - OPTIONAL: Show information (verbose). Argument: ```-v```. Should be 1 or 0. Default to 0.
 - OPTIONAL : Name of the catalog. Argument: ```-n```. Default to "observations_2mass_{bvalue}_{lvalue}.cat_{psize}.csv"
 
-Arguments can be placed in any order. Here is an example to get Gaia DR3 data for a zone center in longitude=45°, lattitude=1°, for a pixel zise of 5" and that save the data in the directory ```/home/user/data/```:
+Arguments can be placed in any order. Here is an example to get Gaia DR3 data for a zone center in longitude=45°, lattitude=1°, for a pixel zise of 5' and that save the data in the directory ```/home/user/data/```:
 ```python3 findgaia.py -l 45 -b 5 -p 5 -d /home/user/data/```
 
 ```findgaia.py``` can also be directly called within a terminal:
@@ -30,7 +30,7 @@ Both files are CSV file. They contains the following columns:
 - Gaia: G, G_err, BP, BP_err, RP, RP_err, l, b
 - 2mass: J, J_err_, H_m, H_err, J_m, J_err, l, b
  
- Sources with empty columns are automatically removed.
+ Sources with any empty column are automatically removed.
 
 ## Installation
 This package can by installed via pip:

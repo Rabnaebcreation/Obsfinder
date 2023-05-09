@@ -16,7 +16,7 @@ class Findgaia():
     This class contains tools to query the Gaia archive and retreive data from Gaia DR3.
     """
     
-    def __init__(self, lvalue: float, bvalue: float, path: str, psize: float, proxy: tuple[str, int] = None, verbose: int = 0, name: str = None) -> None:
+    def __init__(self, lvalue: float, bvalue: float, psize: float, path: str = '', proxy: tuple[str, int] = None, verbose: int = 0, name: str = None) -> None:
         """
         Initialize the class
 
@@ -226,8 +226,10 @@ class Findgaia():
 
         if self.filename == None:
             # Name of the output file
-            self.filename = 'observations_gaia_{:.6f}_{:.6f}.cat_{:.6f}.csv' \
+            self.filename = self.path + 'observations_gaia_{:.6f}_{:.6f}.cat_{:.6f}.dat' \
                     .format(self.bvalue, self.lvalue, self.psize)
+        else:
+            self.filename = self.path + self.filename
             
         #data.drop(columns=['source_id'], inplace=True,)
         #data.to_csv(f"{self.path}/{self.filename}", float_format = '%.4f', index=False)
@@ -359,7 +361,7 @@ def main() -> int:
     path = args.d
     name = args.n
 
-    fgaia = Findgaia(long, latt, path, psize, proxy = ("11.0.0.254",3142), verbose = verbose, name = name)
+    fgaia = Findgaia(lvalue = long, bvalue = latt, path = path, psize = psize, proxy = ("11.0.0.254",3142), verbose = verbose, name = name)
     fgaia.get_obs()
 
     return 0
