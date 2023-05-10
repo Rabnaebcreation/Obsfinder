@@ -16,7 +16,7 @@ class Findgaia():
     This class contains tools to query the Gaia archive and retreive data from Gaia DR3.
     """
     
-    def __init__(self, lvalue: float, bvalue: float, psize: float, path: str = '', proxy: tuple[str, int] = None, verbose: int = 0, name: str = None) -> None:
+    def __init__(self, lvalue: float, bvalue: float, psize: float = 5, path: str = '', proxy: tuple[str, int] = None, verbose: int = 0, name: str = None) -> None:
         """
         Initialize the class
 
@@ -40,8 +40,8 @@ class Findgaia():
         self.host = "gea.esac.esa.int"
         self.port = 443
         self.pathinfo = "/tap-server/tap/async"
-        self.query = "SELECT phot_g_mean_mag, phot_g_mean_flux_over_error,\
-                phot_bp_mean_mag, phot_bp_mean_flux_over_error, \
+        self.query = "SELECT phot_bp_mean_mag, phot_bp_mean_flux_over_error, \
+                phot_g_mean_mag, phot_g_mean_flux_over_error,\
                 phot_rp_mean_mag, phot_rp_mean_flux_over_error, \
                 l, b \
                 FROM gaiadr3.gaia_source \
@@ -299,12 +299,12 @@ class Findgaia():
             print("Attaching magnitude uncertainty to each band...")
 
         # Compute the uncertainty on the magnitude
-        data['phot_g_mean_flux_over_error'] = self.mag_uncertainty(data['phot_g_mean_flux_over_error'])
         data['phot_bp_mean_flux_over_error'] = self.mag_uncertainty(data['phot_bp_mean_flux_over_error'])
+        data['phot_g_mean_flux_over_error'] = self.mag_uncertainty(data['phot_g_mean_flux_over_error'])
         data['phot_rp_mean_flux_over_error'] = self.mag_uncertainty(data['phot_rp_mean_flux_over_error'])
 
-        data.rename(columns={'phot_g_mean_flux_over_error': 'phot_g_mean_mag_error', \
-                            'phot_bp_mean_flux_over_error': 'phot_bp_mean_mag_error', \
+        data.rename(columns={'phot_bp_mean_flux_over_error': 'phot_bp_mean_mag_error', \
+                            'phot_g_mean_flux_over_error': 'phot_g_mean_mag_error', \
                             'phot_rp_mean_flux_over_error': 'phot_rp_mean_mag_error'}, inplace=True)
 
         return data
