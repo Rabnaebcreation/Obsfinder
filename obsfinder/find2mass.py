@@ -21,9 +21,9 @@ class Find2mass():
 
         Args:
             lvalue (float): 
-                Square center value in longitude (in degree)
+                Starting Galactic longitude (in degree)
             bvalue (float): 
-                Square center value in lattitude (in degree)
+                Starting Galactic latitude (in degree)
             psize (float): 
                 Pixel size (in degree)
             path (str): 
@@ -60,16 +60,16 @@ class Find2mass():
 
         Args:
             lmin (float): 
-                Square left value in longitude (in degree)
+                Lowest value in longitude (in degree)
             lmax (float):
-                Square right value in longitude (in degree)
+                Highest value in longitude (in degree)
 
         Returns:
             pd.DataFrame: Dataframe containing the data
         """
 
         zone = f"glon BETWEEN {lmin} AND {lmax} \
-                 AND glat BETWEEN {self.bvalue - self.psize/2} AND {self.bvalue + self.psize/2}"
+                 AND glat BETWEEN {self.bvalue} AND {self.bvalue + self.psize}"
             
         query = self.query + zone
 
@@ -218,19 +218,26 @@ class Find2mass():
         Complete function to get the observationnal data
         """
 
-        # If zone definition is not in [0, 360]
-        if self.lvalue - (self.psize/2) < 0:
+        # If longitude zone definition contains negative and positive longitudes
+        if self.lvalue < 0 and self.lvalue + self.psize > 0:
             if self.verbose:
                 print("Query split in two parts")
 
-            data_part1 = self.query_obs(360 + (self.lvalue - self.psize/2), 360)
-            data_part2 = self.query_obs(0, self.lvalue + self.psize/2)
+            data_part1 = self.query_obs(360 + self.lvalue, 360)
+            data_part2 = self.query_obs(0, self.lvalue + self.psize)
 
             data = pd.concat([data_part1, data_part2], ignore_index=True)
+        
+        # If longitude zone definition is not entirely inferior to 0
+        elif self.lvalue < 0 and self.lvalue + self.psize < 0:
+            if self.verbose:
+                print("Negative longitude range, aborting")
+                exit()
+        
 
         # If zone definition is in the range [0, 360]
         else:
-            data = self.query_obs(self.lvalue - self.psize/2, self.lvalue + self.psize/2)
+            data = self.query_obs(self.lvalue, self.lvalue + self.psize)
 
         # Clean observations
         data = self.clean_obs(data)
@@ -245,8 +252,8 @@ def main() -> int:
     """
     # Arguments definition
     parser = argparse.ArgumentParser()
-    parser.add_argument('-l', type = float, required = True, help = "Square center value in Galactic longitude (deg)")
-    parser.add_argument('-b', type = float, required = True, help = "Square center value in Galactic lattitude (deg)")
+    parser.add_argument('-l', type = float, required = True, help = "Starting Galactic longitude (deg)")
+    parser.add_argument('-b', type = float, required = True, help = "Starting Galactic latitude (deg)")
     parser.add_argument('-p', type = float, required = False, help = "Pixel size (arcminute)", default = 5)
     parser.add_argument('-v', type = int, required = False, help = "Verbose", default = 0)
     parser.add_argument('-d', type = str, required = False, help = "Working directory", default = '')
