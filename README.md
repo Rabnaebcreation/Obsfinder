@@ -24,8 +24,8 @@ The same stand for ```find2mass.py```:
 ```newfind2mass -l 45 -b 5 -p 5 -d /home/user/data/```
 
 The name of the output file have the following form:
-- ```observations_gaia_{latitude}_{longitude}.cat_{size}.csv``` with ```findgaia.py```
-- ```observations_2mass_{latitude}_{longitude}.cat_{size}.csv``` with ```find2mass.py```
+- ```observations_gaia_{latitude}_{longitude}.cat_{size}.dat``` with ```findgaia.py```
+- ```observations_2mass_{latitude}_{longitude}.cat_{size}.dat``` with ```find2mass.py```
 
 ## Output file format
 Both files are CSV file. They contains the following columns:

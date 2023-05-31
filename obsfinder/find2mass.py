@@ -196,10 +196,9 @@ class Find2mass():
 
         if self.filename == None:
             # Name of the output file
-            self.filename = self.path + 'observations_2mass_{:.6f}_{:.6f}.cat_{:.6f}.dat' \
-                    .format(self.bvalue, self.lvalue, self.psize)
+            self.filename = f"{self.path}/observations_2mass_{self.bvalue:.6f}_{self.lvalue:.6f}.cat_{self.psize:.6f}.dat"
         else:
-            self.filename = self.path + self.filename
+            self.filename = f"{self.path}/{self.filename}"
             
         #data.to_csv(f"{self.path}/{self.filename}", float_format = '%.4f', index=False)
 

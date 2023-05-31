@@ -226,10 +226,9 @@ class Findgaia():
 
         if self.filename == None:
             # Name of the output file
-            self.filename = self.path + 'observations_gaia_{:.6f}_{:.6f}.cat_{:.6f}.dat' \
-                    .format(self.bvalue, self.lvalue, self.psize)
+            self.filename = f"{self.path}/observations_gaia_{self.bvalue:.6f}_{self.lvalue:.6f}.cat_{self.psize:.6f}.dat"
         else:
-            self.filename = self.path + self.filename
+            self.filename = f"{self.path}/{self.filename}"
             
         #data.drop(columns=['source_id'], inplace=True,)
         #data.to_csv(f"{self.path}/{self.filename}", float_format = '%.4f', index=False)
@@ -368,7 +367,7 @@ def main() -> int:
     path = args.d
     name = args.n
 
-    fgaia = Findgaia(lvalue = long, bvalue = latt, path = path, psize = psize, proxy = ("11.0.0.254",3142), verbose = verbose, name = name)
+    fgaia = Findgaia(lvalue = long, bvalue = latt, path = path, psize = psize, proxy = None, verbose = verbose, name = name)
     fgaia.get_obs()
 
     return 0
