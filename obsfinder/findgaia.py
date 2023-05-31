@@ -367,7 +367,7 @@ def main() -> int:
     path = args.d
     name = args.n
 
-    fgaia = Findgaia(lvalue = long, bvalue = latt, path = path, psize = psize, proxy = None, verbose = verbose, name = name)
+    fgaia = Findgaia(lvalue = long, bvalue = latt, path = path, psize = psize, proxy = ("11.0.0.254",3142), verbose = verbose, name = name)
     fgaia.get_obs()
 
     return 0

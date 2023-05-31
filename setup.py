@@ -5,7 +5,7 @@ with open("README.md", "r", encoding="utf-8") as fh:
 
 setuptools.setup(
     name='obsfinder',
-    version='0.5.3',
+    version='0.5.4',
     author='Barnabé Déforêt',
     author_email='babedef@orange.fr',
     description='Tools to query 2mass and Gaia observatins',
