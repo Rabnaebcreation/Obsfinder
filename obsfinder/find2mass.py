@@ -6,6 +6,7 @@ import urllib.parse as urllib
 import pandas as pd
 import numpy as np
 import argparse
+import pathlib
 import time
 import csv
 import sys
@@ -15,17 +16,17 @@ class Find2mass():
     This class contains tools to query caltech server and retreive 2mass data.
     """
     
-    def __init__(self, lvalue: float, bvalue: float, psize: float, path: str = '', proxy: tuple[str, int] = None, verbose: int = 0, name: str = None) -> None:
+    def __init__(self, lvalue: float, bvalue: float, psize: float, path: str = None, proxy: tuple[str, int] = None, verbose: int = 0, name: str = None) -> None:
         """
         Initialize the class
 
         Args:
             lvalue (float): 
-                Starting Galactic longitude (in degree)
+                Square center value in Galactic longitude (in degree)
             bvalue (float): 
-                Starting Galactic latitude (in degree)
+                Square center value in Galactic latitude (in degree)
             psize (float): 
-                Pixel size (in degree)
+                Pixel size (in arcmin)
             path (str): 
                 Working directory
             proxy (tuple[str, int], optional):
@@ -33,7 +34,7 @@ class Find2mass():
             verbose (int, optional): 
                 Toggle verbose (1 or 0). Default to 0.
             name (str, optional):
-                Name of the catalog. Default name is 'observations_2mass_{bvalue}_{lvalue}.cat_{psize}.csv'
+                Name of the catalog. Default name is 'observations_2mass_{bvalue}_{lvalue}_{psize}.csv'
         """
 
         self.host = "irsa.ipac.caltech.edu"
@@ -49,6 +50,9 @@ class Find2mass():
         self.proxy = proxy
         self.verbose = verbose
         self.filename = name
+
+        if self.path == None:
+            self.path = str(pathlib.Path().resolve())
 
     def query_obs(self, lmin: float, lmax: float) -> pd.DataFrame:
         """
@@ -69,7 +73,7 @@ class Find2mass():
         """
 
         zone = f"glon BETWEEN {lmin} AND {lmax} \
-                 AND glat BETWEEN {self.bvalue} AND {self.bvalue + self.psize}"
+                 AND glat BETWEEN {self.bvalue - self.psize/2} AND {self.bvalue + self.psize/2}"
             
         query = self.query + zone
 
@@ -135,7 +139,7 @@ class Find2mass():
                 exit()
 
             #wait and repeat
-            time.sleep(1.0)
+            time.sleep(0.2)
 
         connection.close()
 
@@ -196,7 +200,7 @@ class Find2mass():
 
         if self.filename == None:
             # Name of the output file
-            self.filename = f"{self.path}/observations_2mass_{self.bvalue:.6f}_{self.lvalue:.6f}.cat_{self.psize:.6f}.dat"
+            self.filename = f"{self.path}/observations_2mass_{self.bvalue:.6f}_{self.lvalue:.6f}_{self.psize:.6f}.dat"
         else:
             self.filename = f"{self.path}/{self.filename}"
             
@@ -209,7 +213,7 @@ class Find2mass():
             print('Done!')
             print(f"Nb sources: {len(data)}")
 
-        print(f"2mass obs saved in {self.path}{self.filename}")
+        print(f"2mass obs saved in {self.filename}")
 
     
     def get_obs(self) -> None:
@@ -218,17 +222,17 @@ class Find2mass():
         """
 
         # If longitude zone definition contains negative and positive longitudes
-        if self.lvalue < 0 and self.lvalue + self.psize > 0:
+        if self.lvalue - self.psize/2 < 0 and self.lvalue + self.psize/2 > 0:
             if self.verbose:
                 print("Query split in two parts")
 
-            data_part1 = self.query_obs(360 + self.lvalue, 360)
-            data_part2 = self.query_obs(0, self.lvalue + self.psize)
+            data_part1 = self.query_obs(360 + self.lvalue - self.psize/2, 360)
+            data_part2 = self.query_obs(0, self.lvalue + self.psize/2)
 
             data = pd.concat([data_part1, data_part2], ignore_index=True)
         
-        # If longitude zone definition is not entirely inferior to 0
-        elif self.lvalue < 0 and self.lvalue + self.psize < 0:
+        # If longitude zone definition is entirely inferior to 0
+        elif self.lvalue - self.psize/2 < 0 and self.lvalue + self.psize/2 <= 0:
             if self.verbose:
                 print("Negative longitude range, aborting")
                 exit()
@@ -236,7 +240,7 @@ class Find2mass():
 
         # If zone definition is in the range [0, 360]
         else:
-            data = self.query_obs(self.lvalue, self.lvalue + self.psize)
+            data = self.query_obs(self.lvalue - self.psize/2, self.lvalue + self.psize/2)
 
         # Clean observations
         data = self.clean_obs(data)
@@ -251,11 +255,11 @@ def main() -> int:
     """
     # Arguments definition
     parser = argparse.ArgumentParser()
-    parser.add_argument('-l', type = float, required = True, help = "Starting Galactic longitude (deg)")
-    parser.add_argument('-b', type = float, required = True, help = "Starting Galactic latitude (deg)")
+    parser.add_argument('-l', type = float, required = True, help = "Square center value in Galactic longitude (deg)")
+    parser.add_argument('-b', type = float, required = True, help = "Square center value in Galactic latitude (deg)")
     parser.add_argument('-p', type = float, required = False, help = "Pixel size (arcminute)", default = 5)
     parser.add_argument('-v', type = int, required = False, help = "Verbose", default = 0)
-    parser.add_argument('-d', type = str, required = False, help = "Working directory", default = '')
+    parser.add_argument('-d', type = str, required = False, help = "Working directory", default = None)
     parser.add_argument('-n', type = str, required = False, help = "Name of the output file", default = None)
 
     # Get arguments value
