@@ -24,5 +24,6 @@ setuptools.setup(
         "numpy>=1.20.3",
         "pandas>=1.5.3",
         "pathlib>=1.0.1",
+        "pygaia>=3.0.3",
     ],
 )
