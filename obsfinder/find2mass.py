@@ -16,7 +16,7 @@ class Find2mass():
     This class contains tools to query caltech server and retreive 2mass data.
     """
     
-    def __init__(self, lvalue: float, bvalue: float, psize: float, path: str = None, proxy: tuple[str, int] = None, verbose: int = 0, name: str = None) -> None:
+    def __init__(self, lvalue: float, bvalue: float, psize: float, path: str = None, proxy: tuple[str, int] = None, verbose: int = 0, name: str = None, hdf5: bool = 0) -> None:
         """
         Initialize the class
 
@@ -34,7 +34,9 @@ class Find2mass():
             verbose (int, optional): 
                 Toggle verbose (1 or 0). Default to 0.
             name (str, optional):
-                Name of the catalog. Default name is 'observations_2mass_{bvalue}_{lvalue}_{psize}.csv'
+                Name of the catalog. Default name is 'observations_2mass_{bvalue}_{lvalue}_{psize}'
+            hdf5 (bool, optional):
+                Toggle hdf5 output file format (1 or 0). Default to 0 (ascii)
         """
 
         self.host = "irsa.ipac.caltech.edu"
@@ -50,6 +52,7 @@ class Find2mass():
         self.proxy = proxy
         self.verbose = verbose
         self.filename = name
+        self.hdf5 = hdf5
 
         if self.path == None:
             self.path = str(pathlib.Path().resolve())
@@ -200,14 +203,14 @@ class Find2mass():
 
         if self.filename == None:
             # Name of the output file
-            self.filename = f"{self.path}/observations_2mass_{self.bvalue:.6f}_{self.lvalue:.6f}_{self.psize:.6f}.dat"
+            self.filename = f"{self.path}/observations_2mass_{self.bvalue:.6f}_{self.lvalue:.6f}_{self.psize:.6f}"
         else:
             self.filename = f"{self.path}/{self.filename}"
-            
-        #data.to_csv(f"{self.path}/{self.filename}", float_format = '%.4f', index=False)
 
-        # Save data
-        np.savetxt(self.filename, data, fmt='%-10.4f')
+        if self.hdf5:
+            data.to_hdf(self.filename + ".hdf5", key='data', mode='w')
+        else:
+            np.savetxt(self.filename, data, fmt='%-10.4f')
 
         if self.verbose:
             print('Done!')
@@ -261,6 +264,7 @@ def main() -> int:
     parser.add_argument('-v', type = int, required = False, help = "Verbose", default = 0)
     parser.add_argument('-d', type = str, required = False, help = "Working directory", default = None)
     parser.add_argument('-n', type = str, required = False, help = "Name of the output file", default = None)
+    parser.add_argument('-h5', type = int, required = False, help = "Toggle hdf5 output file format", default = 0)
 
     # Get arguments value
     args = parser.parse_args()
@@ -270,8 +274,9 @@ def main() -> int:
     verbose = args.v
     path = args.d
     name = args.n
+    hdf5 = args.h5
 
-    ftmass = Find2mass(lvalue = long, bvalue = latt, path = path, psize = psize, proxy = ("11.0.0.254",3142), verbose = verbose, name = name)
+    ftmass = Find2mass(lvalue = long, bvalue = latt, path = path, psize = psize, proxy = ("11.0.0.254",3142), verbose = verbose, name = name, hdf5 = hdf5)
     ftmass.get_obs()
 
     return 0

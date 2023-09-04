@@ -1,6 +1,5 @@
 #!/usr/bin/env python3
 
-from pygaia.errors.photometric import magnitude_uncertainty
 from xml.dom.minidom import parseString
 import http.client as httplib
 import urllib.parse as urllib
@@ -17,7 +16,7 @@ class Findgaia():
     This class contains tools to query the Gaia archive and retreive data from Gaia DR3.
     """
     
-    def __init__(self, lvalue: float, bvalue: float, psize: float, path: str = None, proxy: tuple[str, int] = None, verbose: int = 0, name: str = None) -> None:
+    def __init__(self, lvalue: float, bvalue: float, psize: float, path: str = None, proxy: tuple[str, int] = None, verbose: int = 0, name: str = None, hdf5: bool = 0) -> None:
         """
         Initialize the class
 
@@ -36,6 +35,8 @@ class Findgaia():
                 Toggle verbose (1 or 0). Default to 0.
             name (str, optional):
                 Name of the catalog. Default name is 'observations_gaia_{bvalue}_{lvalue}_{psize}.csv'
+            hdf5 (bool, optional):
+                Toggle hdf5 output file format (1 or 0). Default to 0 (ascii)
         """
 
         self.host = "gea.esac.esa.int"
@@ -60,6 +61,7 @@ class Findgaia():
         self.proxy = proxy
         self.verbose = verbose
         self.filename = name
+        self.hdf5 = hdf5
 
         if self.path == None:
             self.path = str(pathlib.Path().resolve())
@@ -231,15 +233,14 @@ class Findgaia():
 
         if self.filename == None:
             # Name of the output file
-            self.filename = f"{self.path}/observations_gaia_{self.bvalue:.6f}_{self.lvalue:.6f}_{self.psize:.6f}.dat"
+            self.filename = f"{self.path}/observations_gaia_{self.bvalue:.6f}_{self.lvalue:.6f}_{self.psize:.6f}"
         else:
             self.filename = f"{self.path}/{self.filename}"
-            
-        #data.drop(columns=['source_id'], inplace=True,)
-        #data.to_csv(f"{self.path}/{self.filename}", float_format = '%.4f', index=False)
 
-        # Save data
-        np.savetxt(self.filename, data, fmt='%-10.4f')
+        if self.hdf5:
+            data.to_hdf(self.filename + ".hdf5", key='data', mode='w')
+        else:
+            np.savetxt(self.filename, data, fmt='%-10.4f')
 
         if self.verbose:
             print('Done!')
@@ -362,6 +363,7 @@ def main() -> int:
     parser.add_argument('-v', type = int, required = False, help = "Verbose", default = 0)
     parser.add_argument('-d', type = str, required = False, help = "Working directory", default = None)
     parser.add_argument('-n', type = str, required = False, help = "Name of the output file", default = None)
+    parser.add_argument('-h5', type = int, required = False, help = "Toggle hdf5 output file format", default = 0)
 
     # Get arguments value
     args = parser.parse_args()
@@ -371,8 +373,9 @@ def main() -> int:
     verbose = args.v
     path = args.d
     name = args.n
+    hdf5 = args.h5
 
-    fgaia = Findgaia(lvalue = long, bvalue = latt, path = path, psize = psize, proxy = ("11.0.0.254",3142), verbose = verbose, name = name)
+    fgaia = Findgaia(lvalue = long, bvalue = latt, path = path, psize = psize, proxy = ("11.0.0.254",3142), verbose = verbose, name = name, hdf5 = hdf5)
     fgaia.get_obs()
 
     return 0
