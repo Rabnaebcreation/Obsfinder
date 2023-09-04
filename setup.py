@@ -24,6 +24,6 @@ setuptools.setup(
         "numpy>=1.20.3",
         "pandas>=1.5.3",
         "pathlib>=1.0.1",
-        "tables>=3.9.0",
+        "tables>=3.8.0",
     ],
 )
