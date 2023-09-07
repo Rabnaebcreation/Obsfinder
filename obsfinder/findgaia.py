@@ -252,11 +252,11 @@ class Findgaia():
     def write_hdf5(self, data: pd.DataFrame) -> None:
         with h5py.File(self.filename + ".hdf5", 'w') as f:
             f.create_dataset('BP', data=data['phot_bp_mean_mag'], dtype = float)
-            f.create_dataset('BP_error', data=data['phot_bp_mean_mag_error'], dtype = float)
+            f.create_dataset('BP_err', data=data['phot_bp_mean_mag_error'], dtype = float)
             f.create_dataset('G', data=data['phot_g_mean_mag'], dtype = float)
-            f.create_dataset('G_error', data=data['phot_g_mean_mag_error'], dtype = float)
+            f.create_dataset('G_err', data=data['phot_g_mean_mag_error'], dtype = float)
             f.create_dataset('RP', data=data['phot_rp_mean_mag'], dtype = float)
-            f.create_dataset('RP_error', data=data['phot_rp_mean_mag_error'], dtype = float)
+            f.create_dataset('RP_err', data=data['phot_rp_mean_mag_error'], dtype = float)
             f.create_dataset('l', data=data['l'], dtype = float)
             f.create_dataset('b', data=data['b'], dtype = float)
 

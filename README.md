@@ -14,7 +14,7 @@ Both program work in the same way. Thay take as argments:
 - OPTIONAL: Pixel size, i.e size of the zone of interest (in arcminute). Argument: ```-p```. Default to 5.
 - OPTIONAL: Show information (verbose). Argument: ```-v```. Should be 1 or 0. Default to 0.
 - OPTIONAL : Name of the catalog. Argument: ```-n```. Default to "observations_2mass_{bvalue}_{lvalue}.cat_{psize}"
-- OPTIONAL : Toggle hdf5 output file format (1 or 0). Default to 0 (ascii).
+- OPTIONAL : Toggle hdf5 output file format (1 or 0). Argument: ```-h5```. Default to 0 (ascii).
 
 Arguments can be placed in any order. Here is an example to get Gaia DR3 data for a zone centered at longitude=45°, lattitude=1°, for a pixel zise of 5' and that save the data in the directory ```/home/user/data/```:
 ```python3 findgaia.py -l 45 -b 5 -p 5 -d /home/user/data/```
@@ -29,9 +29,9 @@ The name of the output file have the following form:
 - ```observations_2mass_{latitude}_{longitude}_{size}.dat``` with ```find2mass.py```
 
 ## Output file format
-Both files are CSV file. They contains the following columns:
-- Gaia: G, G_err, BP, BP_err, RP, RP_err, l, b
-- 2mass: J, J_err_, H_m, H_err, J_m, J_err, l, b
+Both files are either ascii or hdf5 files. They contains the following columns/datasets:
+- Gaia: BP, BP_err, G, G_err, RP, RP_err, l, b
+- 2mass: J, J_err, H_m, H_err, J_m, J_err, l, b
  
  Sources with any empty column are automatically removed.
 
