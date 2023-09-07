@@ -7,6 +7,7 @@ import pandas as pd
 import numpy as np
 import argparse
 import pathlib
+import h5py
 import time
 import csv
 import sys
@@ -208,9 +209,9 @@ class Find2mass():
             self.filename = f"{self.path}/{self.filename}"
 
         if self.hdf5:
-            data.to_hdf(self.filename + ".hdf5", key='data', mode='w')
+            self.write_hdf5(data)
         else:
-            np.savetxt(self.filename, data, fmt='%-10.4f')
+            np.savetxt(self.filename + ".dat", data, fmt='%-10.4f')
 
         if self.verbose:
             print('Done!')
@@ -218,7 +219,6 @@ class Find2mass():
 
         print(f"2mass obs saved in {self.filename}")
 
-    
     def get_obs(self) -> None:
         """
         Complete function to get the observationnal data
@@ -251,6 +251,16 @@ class Find2mass():
         # Save observations
         self.save_obs(data)
         
+    def write_hdf5(self, data: pd.DataFrame) -> None:
+        with h5py.File(self.filename + ".hdf5", 'w') as f:
+            f.create_dataset('J', data = data['j_m'], dtype = float)
+            f.create_dataset('J_err', data = data['j_msigcom'], dtype = float)
+            f.create_dataset('H', data = data['h_m'], dtype = float)
+            f.create_dataset('H_err', data = data['h_msigcom'], dtype = float)
+            f.create_dataset('K', data = data['k_m'], dtype = float)
+            f.create_dataset('K_err', data = data['k_msigcom'])
+            f.create_dataset('l', data = data['glon'], dtype = float)
+            f.create_dataset('b', data = data['glat'], dtype = float)
 
 def main() -> int:
     """

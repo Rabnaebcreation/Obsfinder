@@ -7,6 +7,7 @@ import pandas as pd
 import numpy as np
 import argparse
 import pathlib
+import h5py
 import time
 import csv
 import sys
@@ -238,7 +239,7 @@ class Findgaia():
             self.filename = f"{self.path}/{self.filename}"
 
         if self.hdf5:
-            data.to_hdf(self.filename + ".hdf5", key='data', mode='w')
+            self.write_hdf5(data)
         else:
             np.savetxt(self.filename, data, fmt='%-10.4f')
 
@@ -247,6 +248,17 @@ class Findgaia():
             print(f"Nb sources: {len(data)}")
         
         print(f"Gaia obs saved in {self.filename}")
+
+    def write_hdf5(self, data: pd.DataFrame) -> None:
+        with h5py.File(self.filename + ".hdf5", 'w') as f:
+            f.create_dataset('BP', data=data['phot_bp_mean_mag'], dtype = float)
+            f.create_dataset('BP_error', data=data['phot_bp_mean_mag_error'], dtype = float)
+            f.create_dataset('G', data=data['phot_g_mean_mag'], dtype = float)
+            f.create_dataset('G_error', data=data['phot_g_mean_mag_error'], dtype = float)
+            f.create_dataset('RP', data=data['phot_rp_mean_mag'], dtype = float)
+            f.create_dataset('RP_error', data=data['phot_rp_mean_mag_error'], dtype = float)
+            f.create_dataset('l', data=data['l'], dtype = float)
+            f.create_dataset('b', data=data['b'], dtype = float)
 
     def maglimList(data: np.ndarray, level: int, percentile: float) -> np.ndarray:
         """
@@ -314,7 +326,6 @@ class Findgaia():
 
         return data
         
-    
     def get_obs(self) -> None:
         """
         Complete function to get the observationnal data
