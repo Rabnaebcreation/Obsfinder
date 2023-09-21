@@ -375,6 +375,7 @@ def main() -> int:
     parser.add_argument('-d', type = str, required = False, help = "Working directory", default = None)
     parser.add_argument('-n', type = str, required = False, help = "Name of the output file", default = None)
     parser.add_argument('-h5', type = int, required = False, help = "Toggle hdf5 output file format", default = 0)
+    parser.add_argument('-proxy', type = str, required = False, help = "Proxy to use host:port", default = None)
 
     # Get arguments value
     args = parser.parse_args()
@@ -386,7 +387,12 @@ def main() -> int:
     name = args.n
     hdf5 = args.h5
 
-    fgaia = Findgaia(lvalue = long, bvalue = latt, path = path, psize = psize, proxy = ("11.0.0.254",3142), verbose = verbose, name = name, hdf5 = hdf5)
+    if args.proxy != None:
+        proxy = (args.proxy.split(':')[0], int(args.proxy.split(':')[1]))
+    else:
+        proxy = None
+
+    fgaia = Findgaia(lvalue = long, bvalue = latt, path = path, psize = psize, proxy = proxy, verbose = verbose, name = name, hdf5 = hdf5)
     fgaia.get_obs()
 
     return 0
