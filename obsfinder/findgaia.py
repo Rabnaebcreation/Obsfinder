@@ -46,15 +46,9 @@ class Findgaia():
         self.query = "SELECT phot_bp_mean_mag, phot_bp_mean_flux_over_error, \
                 phot_g_mean_mag, phot_g_mean_flux_over_error,\
                 phot_rp_mean_mag, phot_rp_mean_flux_over_error, \
-                l, b \
+                parallax, parallax_error ,l, b \
                 FROM gaiadr3.gaia_source \
                 WHERE "
-        # self.query = "SELECT source_id, phot_g_n_obs, phot_g_mean_mag, phot_g_mean_flux, phot_g_mean_flux_error,\
-        #     phot_bp_n_obs, phot_bp_mean_mag, phot_bp_mean_flux, phot_bp_mean_flux_error, \
-        #     phot_rp_n_obs, phot_rp_mean_mag, phot_rp_mean_flux, phot_rp_mean_flux_error, \
-        #     l, b, parallax, parallax_error \
-        #     FROM gaiadr3.gaia_source \
-        #     WHERE "
         self.lvalue = lvalue
         self.bvalue = bvalue
         self.path = path
@@ -257,6 +251,8 @@ class Findgaia():
             f.create_dataset('G_err', data=data['phot_g_mean_mag_error'], dtype = float)
             f.create_dataset('RP', data=data['phot_rp_mean_mag'], dtype = float)
             f.create_dataset('RP_err', data=data['phot_rp_mean_mag_error'], dtype = float)
+            f.create_dataset('parallax', data=data['parallax'], dtype = float)
+            f.create_dataset('parallax_err', data=data['parallax_error'], dtype = float)
             f.create_dataset('l', data=data['l'], dtype = float)
             f.create_dataset('b', data=data['b'], dtype = float)
 

@@ -4,7 +4,7 @@ This is a repository containing tools to query observations catalogue from 2mass
 ## Available program
 For the moment, only 2 program can be used:
 - ```findgaia.py```: This program send a query to the Gaia archive (https://gea.esac.esa.int/archive/) to recover data from the Gaia DR3 point source catalogue in a zone define by its center and its size.
-- ```findgaia.py```: This program send a query to the NASA/IPAC Infrared Science Archive (https://irsa.ipac.caltech.edu) to recover data from the 2MASS point source catalogue in a zone define by its center and its size.
+- ```find2mass.py```: This program send a query to the NASA/IPAC Infrared Science Archive (https://irsa.ipac.caltech.edu) to recover data from the 2MASS point source catalogue in a zone define by its center and its size.
 
 ## Usage
 Both program work in the same way. Thay take as argments:
@@ -21,9 +21,9 @@ Arguments can be placed in any order. Here is an example to get Gaia DR3 data fo
 ```python3 findgaia.py -l 45 -b 5 -p 5 -d /home/user/data/```
 
 ```findgaia.py``` can also be directly called within a terminal:
-```findgaia -l 45 -b 5 -p 5 -d /home/user/data/```
+```pyfindgaia -l 45 -b 5 -p 5 -d /home/user/data/```
 The same stand for ```find2mass.py```:
-```newfind2mass -l 45 -b 5 -p 5 -d /home/user/data/```
+```pyfind2mass -l 45 -b 5 -p 5 -d /home/user/data/```
 
 The name of the output file have the following form:
 - ```observations_gaia_{latitude}_{longitude}_{size}.dat``` with ```findgaia.py```
@@ -31,8 +31,8 @@ The name of the output file have the following form:
 
 ## Output file format
 Both files are either ascii or hdf5 files. They contains the following columns/datasets:
-- Gaia: BP, BP_err, G, G_err, RP, RP_err, l, b
-- 2mass: J, J_err, H_m, H_err, J_m, J_err, l, b
+- Gaia: BP, BP_err, G, G_err, RP, RP_err, parallax, parallax_err, l, b,
+- 2mass: J, J_err, H_m, H_err, K_m, K_err, l, b
  
  Sources with any empty column are automatically removed.
 
