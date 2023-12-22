@@ -13,8 +13,7 @@ Both program work in the same way. Thay take as argments:
 - OPTIONAL: Directory on whish the data will be saved. Argument: ```-d```. Empty by default.
 - OPTIONAL: Pixel size, i.e size of the zone of interest (in arcminute). Argument: ```-p```. Default to 5.
 - OPTIONAL: Show information (verbose). Argument: ```-v```. Should be 1 or 0. Default to 0.
-- OPTIONAL : Name of the catalog. Argument: ```-n```. Default to "observations_2mass_{bvalue}_{lvalue}.cat_{psize}"
-- OPTIONAL : Toggle hdf5 output file format (1 or 0). Argument: ```-h5```. Default to 0 (ascii).
+- OPTIONAL : Name of the catalog. Argument: ```-n```. Default to "observations_{system}_{latitude}_{longitude}_{size}.hdf5". Using any other extension as hdf5 will save the file in ASCII format.
 - OPTIONAL : Define the proxy to use (host:port). Argument: ```-proxy```. Default to None (no proxy).
 
 Arguments can be placed in any order. Here is an example to get Gaia DR3 data for a zone centered at longitude=45°, lattitude=1°, for a pixel zise of 5' and that save the data in the directory ```/home/user/data/```:
@@ -25,9 +24,9 @@ Arguments can be placed in any order. Here is an example to get Gaia DR3 data fo
 The same stand for ```find2mass.py```:
 ```pyfind2mass -l 45 -b 5 -p 5 -d /home/user/data/```
 
-The name of the output file have the following form:
-- ```observations_gaia_{latitude}_{longitude}_{size}.dat``` with ```findgaia.py```
-- ```observations_2mass_{latitude}_{longitude}_{size}.dat``` with ```find2mass.py```
+The default name of the output file have the following form:
+- ```observations_gaia_{latitude}_{longitude}_{size}.hdf5``` with ```findgaia.py```
+- ```observations_2mass_{latitude}_{longitude}_{size}.hdf5``` with ```find2mass.py```
 
 ## Output file format
 Both files are either ascii or hdf5 files. They contains the following columns/datasets:

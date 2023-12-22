@@ -17,7 +17,7 @@ class Findgaia():
     This class contains tools to query the Gaia archive and retreive data from Gaia DR3.
     """
     
-    def __init__(self, lvalue: float, bvalue: float, psize: float, path: str = None, proxy: tuple[str, int] = None, verbose: int = 0, name: str = None, hdf5: bool = 0) -> None:
+    def __init__(self, lvalue: float, bvalue: float, psize: float, path: str = None, proxy: tuple[str, int] = None, verbose: int = 0, name: str = None) -> None:
         """
         Initialize the class
 
@@ -36,8 +36,6 @@ class Findgaia():
                 Toggle verbose (1 or 0). Default to 0.
             name (str, optional):
                 Name of the catalog. Default name is 'observations_gaia_{bvalue}_{lvalue}_{psize}.csv'
-            hdf5 (bool, optional):
-                Toggle hdf5 output file format (1 or 0). Default to 0 (ascii)
         """
 
         self.host = "gea.esac.esa.int"
@@ -56,7 +54,6 @@ class Findgaia():
         self.proxy = proxy
         self.verbose = verbose
         self.filename = name
-        self.hdf5 = hdf5
 
         if self.path == None:
             self.path = str(pathlib.Path().resolve())
@@ -228,11 +225,11 @@ class Findgaia():
 
         if self.filename == None:
             # Name of the output file
-            self.filename = f"{self.path}/observations_gaia_{self.bvalue:.6f}_{self.lvalue:.6f}_{self.psize:.6f}"
+            self.filename = f"{self.path}/observations_gaia_{self.bvalue:.6f}_{self.lvalue:.6f}_{self.psize:.6f}.hdf5"
         else:
             self.filename = f"{self.path}/{self.filename}"
 
-        if self.hdf5:
+        if self.filename.split('.')[-1] == 'hdf5':
             self.write_hdf5(data)
         else:
             np.savetxt(self.filename, data, fmt='%-10.4f')
@@ -244,7 +241,7 @@ class Findgaia():
         print(f"Gaia obs saved in {self.filename}")
 
     def write_hdf5(self, data: pd.DataFrame) -> None:
-        with h5py.File(self.filename + ".hdf5", 'w') as f:
+        with h5py.File(self.filename, 'w') as f:
             f.create_dataset('BP', data=data['phot_bp_mean_mag'], dtype = float)
             f.create_dataset('BP_err', data=data['phot_bp_mean_mag_error'], dtype = float)
             f.create_dataset('G', data=data['phot_g_mean_mag'], dtype = float)
@@ -370,7 +367,6 @@ def main() -> int:
     parser.add_argument('-v', type = int, required = False, help = "Verbose", default = 0)
     parser.add_argument('-d', type = str, required = False, help = "Working directory", default = None)
     parser.add_argument('-n', type = str, required = False, help = "Name of the output file", default = None)
-    parser.add_argument('-h5', type = int, required = False, help = "Toggle hdf5 output file format", default = 0)
     parser.add_argument('-proxy', type = str, required = False, help = "Proxy to use host:port", default = None)
 
     # Get arguments value
@@ -381,14 +377,13 @@ def main() -> int:
     verbose = args.v
     path = args.d
     name = args.n
-    hdf5 = args.h5
 
     if args.proxy != None:
         proxy = (args.proxy.split(':')[0], int(args.proxy.split(':')[1]))
     else:
         proxy = None
 
-    fgaia = Findgaia(lvalue = long, bvalue = latt, path = path, psize = psize, proxy = proxy, verbose = verbose, name = name, hdf5 = hdf5)
+    fgaia = Findgaia(lvalue = long, bvalue = latt, path = path, psize = psize, proxy = proxy, verbose = verbose, name = name)
     fgaia.get_obs()
 
     return 0
