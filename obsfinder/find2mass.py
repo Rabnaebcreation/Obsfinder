@@ -208,7 +208,7 @@ class Find2mass():
         if self.filename.split('.')[-1] == 'hdf5':
             self.write_hdf5(data)
         else:
-            np.savetxt(self.filename, data, fmt='%-10.4f')
+            np.savetxt(self.filename, data, header="J,J_err,H,H_err,K,K_err,l,b", delimiter=',', comments='')
 
         if self.verbose:
             print('Done!')

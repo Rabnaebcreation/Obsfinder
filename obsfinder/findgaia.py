@@ -232,7 +232,7 @@ class Findgaia():
         if self.filename.split('.')[-1] == 'hdf5':
             self.write_hdf5(data)
         else:
-            np.savetxt(self.filename, data, fmt='%-10.4f')
+            np.savetxt(self.filename, data, header="BP,BP_err,G,G_err,RP,RP_err,parallax, parallax_err,l,b", delimiter=',', comments='')
 
         if self.verbose:
             print('Done!')
