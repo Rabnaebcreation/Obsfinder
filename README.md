@@ -33,7 +33,7 @@ Both files are either csv or hdf5 files. They contain the following columns/data
 - Gaia: BP, BP_err, G, G_err, RP, RP_err, parallax, parallax_err, l, b,
 - 2mass: J, J_err, H_m, H_err, K_m, K_err, l, b
  
- Sources with any empty column are automatically removed.
+ Sources with any empty column are automatically removed. Parallaxes are corrected with the Lindegren et al. (2021) method.
 
 ## Installation
 This package can by installed via pip:

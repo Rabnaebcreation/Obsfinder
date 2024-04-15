@@ -3,6 +3,7 @@
 from xml.dom.minidom import parseString
 import http.client as httplib
 import urllib.parse as urllib
+from zero_point import zpt
 import pandas as pd
 import numpy as np
 import argparse
@@ -44,7 +45,7 @@ class Findgaia():
         self.query = "SELECT phot_bp_mean_mag, phot_bp_mean_flux_over_error, \
                 phot_g_mean_mag, phot_g_mean_flux_over_error,\
                 phot_rp_mean_mag, phot_rp_mean_flux_over_error, \
-                parallax, parallax_error ,l, b \
+                parallax, parallax_error ,l, b, nu_eff_used_in_astrometry, pseudocolour, ecl_lat, astrometric_params_solved\
                 FROM gaiadr3.gaia_source \
                 WHERE "
         self.lvalue = lvalue
@@ -209,7 +210,7 @@ class Findgaia():
 
 
         # Remove rows containing at least one nan value
-        data = data[~np.isnan(data).any(axis=1)]
+        data = data[data["phot_g_mean_mag"].notna() & data["phot_bp_mean_mag"].notna() & data["phot_rp_mean_mag"].notna() & data["parallax"].notna()]
 
         # data = data[(data['phot_g_mean_mag'] > 8) & (data['phot_g_mean_mag'] < 17) & (data['phot_bp_mean_mag'] > 8) & (data['phot_bp_mean_mag'] < 17) & (data['phot_rp_mean_mag'] > 8) & (data['phot_rp_mean_mag'] < 17)]
 
@@ -318,6 +319,17 @@ class Findgaia():
                             'phot_rp_mean_flux_over_error': 'phot_rp_mean_mag_error'}, inplace=True)
 
         return data
+    
+    def correct_parallaxes(self, data: pd.DataFrame) -> pd.DataFrame:
+
+        zpt.load_tables()
+        zero_point = zpt.get_zpt(data["phot_g_mean_mag"], data["nu_eff_used_in_astrometry"],
+                   data["pseudocolour"],data["ecl_lat"],
+                   data["astrometric_params_solved"], _warnings=False)
+
+        data["parallax"] -= zero_point
+
+        return data
         
     def get_obs(self) -> None:
         """
@@ -350,6 +362,9 @@ class Findgaia():
 
         # Attach magnitudes uncertainties
         data = self.attach_mag_uncertainty(data)
+
+        # Correct parallaxes offset
+        data = self.correct_parallaxes(data)
 
         # Save observations
         self.save_obs(data)
