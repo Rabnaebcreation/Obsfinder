@@ -7,6 +7,7 @@ from zero_point import zpt
 import pandas as pd
 import numpy as np
 import argparse
+import warnings
 import pathlib
 import h5py
 import time
@@ -42,7 +43,7 @@ class Findgaia():
         self.host = "gea.esac.esa.int"
         self.port = 443
         self.pathinfo = "/tap-server/tap/async"
-        self.query = "SELECT phot_bp_mean_mag, phot_bp_mean_flux_over_error, \
+        self.query = "SELECT source_id, phot_bp_mean_mag, phot_bp_mean_flux_over_error, \
                 phot_g_mean_mag, phot_g_mean_flux_over_error,\
                 phot_rp_mean_mag, phot_rp_mean_flux_over_error, \
                 parallax, parallax_error ,l, b, nu_eff_used_in_astrometry, pseudocolour, ecl_lat, astrometric_params_solved\
@@ -55,6 +56,9 @@ class Findgaia():
         self.proxy = proxy
         self.verbose = verbose
         self.filename = name
+
+        if not self.verbose:
+            warnings.filterwarnings("ignore")
 
         if self.path == None:
             self.path = str(pathlib.Path().resolve())
@@ -253,6 +257,11 @@ class Findgaia():
             f.create_dataset('parallax_err', data=data['parallax_error'], dtype = float)
             f.create_dataset('l', data=data['l'], dtype = float)
             f.create_dataset('b', data=data['b'], dtype = float)
+            # f.create_dataset('nu_eff_used_in_astrometry', data=data['nu_eff_used_in_astrometry'], dtype = float)
+            # f.create_dataset('pseudocolour', data=data['pseudocolour'], dtype = float)
+            # f.create_dataset('ecl_lat', data=data['ecl_lat'], dtype = float)
+            # f.create_dataset('astrometric_params_solved', data=data['astrometric_params_solved'], dtype = int)
+            # f.create_dataset('source_id', data=data['source_id'], dtype = int)
 
     def maglimList(data: np.ndarray, level: int, percentile: float) -> np.ndarray:
         """
@@ -325,7 +334,7 @@ class Findgaia():
         zpt.load_tables()
         zero_point = zpt.get_zpt(data["phot_g_mean_mag"], data["nu_eff_used_in_astrometry"],
                    data["pseudocolour"],data["ecl_lat"],
-                   data["astrometric_params_solved"], _warnings=False)
+                   data["astrometric_params_solved"], _warnings=True)
 
         data["parallax"] -= zero_point
 
