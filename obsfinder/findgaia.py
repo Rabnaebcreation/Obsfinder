@@ -19,7 +19,7 @@ class Findgaia():
     This class contains tools to query the Gaia archive and retreive data from Gaia DR3.
     """
     
-    def __init__(self, lvalue: float, bvalue: float, psize: float, path: str = None, proxy: tuple[str, int] = None, verbose: int = 0, name: str = None) -> None:
+    def __init__(self, lvalue: float, bvalue: float, psize: float, path: str = None, proxy: tuple[str, int] = None, verbose: int = 0, name: str = None, pi: int = 1) -> None:
         """
         Initialize the class
 
@@ -38,6 +38,8 @@ class Findgaia():
                 Toggle verbose (1 or 0). Default to 0.
             name (str, optional):
                 Name of the catalog. Default name is 'observations_gaia_{bvalue}_{lvalue}_{psize}.csv'
+            pi (int, optional):
+                Apply offset correction to the parallaxes. Default to 1, parallaxes are corrected.
         """
 
         self.host = "gea.esac.esa.int"
@@ -56,6 +58,7 @@ class Findgaia():
         self.proxy = proxy
         self.verbose = verbose
         self.filename = name
+        self.pi = pi
 
         if not self.verbose:
             warnings.filterwarnings("ignore")
@@ -257,11 +260,6 @@ class Findgaia():
             f.create_dataset('parallax_err', data=data['parallax_error'], dtype = float)
             f.create_dataset('l', data=data['l'], dtype = float)
             f.create_dataset('b', data=data['b'], dtype = float)
-            # f.create_dataset('nu_eff_used_in_astrometry', data=data['nu_eff_used_in_astrometry'], dtype = float)
-            # f.create_dataset('pseudocolour', data=data['pseudocolour'], dtype = float)
-            # f.create_dataset('ecl_lat', data=data['ecl_lat'], dtype = float)
-            # f.create_dataset('astrometric_params_solved', data=data['astrometric_params_solved'], dtype = int)
-            # f.create_dataset('source_id', data=data['source_id'], dtype = int)
 
     def maglimList(data: np.ndarray, level: int, percentile: float) -> np.ndarray:
         """
@@ -372,8 +370,9 @@ class Findgaia():
         # Attach magnitudes uncertainties
         data = self.attach_mag_uncertainty(data)
 
-        # Correct parallaxes offset
-        data = self.correct_parallaxes(data)
+        if self.pi:
+            # Correct parallaxes offset
+            data = self.correct_parallaxes(data)
 
         # Save observations
         self.save_obs(data)
@@ -392,6 +391,7 @@ def main() -> int:
     parser.add_argument('-d', type = str, required = False, help = "Working directory", default = None)
     parser.add_argument('-n', type = str, required = False, help = "Name of the output file", default = None)
     parser.add_argument('-proxy', type = str, required = False, help = "Proxy to use host:port", default = None)
+    parser.add_argument('-pi', type = int, required=False, help = "Apply offset correction to the parallaxes", default = 1)
 
     # Get arguments value
     args = parser.parse_args()
@@ -401,13 +401,14 @@ def main() -> int:
     verbose = args.v
     path = args.d
     name = args.n
+    pi = args.pi
 
     if args.proxy != None:
         proxy = (args.proxy.split(':')[0], int(args.proxy.split(':')[1]))
     else:
         proxy = None
 
-    fgaia = Findgaia(lvalue = long, bvalue = latt, path = path, psize = psize, proxy = proxy, verbose = verbose, name = name)
+    fgaia = Findgaia(lvalue = long, bvalue = latt, path = path, psize = psize, proxy = proxy, verbose = verbose, name = name, pi = pi)
     fgaia.get_obs()
 
     return 0
