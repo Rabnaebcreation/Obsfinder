@@ -240,7 +240,8 @@ class Findgaia():
         if self.filename.split('.')[-1] == 'hdf5':
             self.write_hdf5(data)
         else:
-            np.savetxt(self.filename, data, header="BP,BP_err,G,G_err,RP,RP_err,parallax, parallax_err,l,b", delimiter=',', comments='')
+            data = data[['phot_bp_mean_mag', 'phot_bp_mean_mag_error', 'phot_g_mean_mag', 'phot_g_mean_mag_error', 'phot_rp_mean_mag', 'phot_rp_mean_mag_error', 'parallax', 'parallax_error', 'l', 'b']]
+            np.savetxt(self.filename, data, header="BP,BP_err,G,G_err,RP,RP_err,parallax,parallax_err,l,b", delimiter=',', comments='')
 
         if self.verbose:
             print('Done!')
