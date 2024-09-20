@@ -186,8 +186,8 @@ class Find2mass():
         # Remove rows containing at least one nan value
         data = data[~np.isnan(data).any(axis=1)]
 
-        # Remove row with a magnitude error greater than 5
-        data = data[(data['j_msigcom'] < 5.) | (data['h_msigcom'] < 5.) | (data['k_msigcom'] < 5.)]
+        # Remove row with a magnitude error greater than 0.5
+        data = data[(data['j_msigcom'] < .5) | (data['h_msigcom'] < .5) | (data['k_msigcom'] < .5)]
 
         return data
 
