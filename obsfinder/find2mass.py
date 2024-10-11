@@ -168,28 +168,6 @@ class Find2mass():
         connection.close()
 
         return data
-    
-    def clean_obs(self, data: pd.DataFrame) -> pd.DataFrame:
-        """
-        Clean the observationnal data
-
-        Args:
-            data (pd.DataFrame): Data to clean
-
-        Returns:
-            pd.DataFrame: Cleaned data
-        """
-
-        if self.verbose:
-            print('Cleaning data...')
-
-        # Remove rows containing at least one nan value
-        data = data[~np.isnan(data).any(axis=1)]
-
-        # Remove row with a magnitude error greater than 0.5
-        data = data[(data['j_msigcom'] < .5) | (data['h_msigcom'] < .5) | (data['k_msigcom'] < .5)]
-
-        return data
 
     def save_obs(self, data: pd.DataFrame) -> None:
         """
@@ -241,9 +219,6 @@ class Find2mass():
         # If zone definition is in the range [0, 360]
         else:
             data = self.query_obs(self.lvalue - self.psize/2, self.lvalue + self.psize/2)
-
-        # Clean observations
-        data = self.clean_obs(data)
 
         # Save observations
         self.save_obs(data)
