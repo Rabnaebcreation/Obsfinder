@@ -168,6 +168,25 @@ class Find2mass():
         connection.close()
 
         return data
+    
+    def clean_obs(self, data: pd.DataFrame) -> pd.DataFrame:
+        """
+        Clean the observationnal data by removing not full rows
+
+        Args:
+            data (pd.DataFrame): Data to clean
+
+        Returns:
+            pd.DataFrame: Cleaned data
+        """
+
+        if self.verbose:
+            print('Cleaning data...')
+
+        # Remove rows containing at least one nan value
+        data = data[~np.isnan(data).any(axis=1)]
+
+        return data
 
     def save_obs(self, data: pd.DataFrame) -> None:
         """
