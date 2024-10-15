@@ -239,6 +239,9 @@ class Find2mass():
         else:
             data = self.query_obs(self.lvalue - self.psize/2, self.lvalue + self.psize/2)
 
+        # Clean observations
+        data = self.clean_obs(data)
+
         # Save observations
         self.save_obs(data)
         
