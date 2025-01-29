@@ -16,7 +16,7 @@ import sys
 
 class Findgaia():
     """
-    This class contains tools to query the Gaia archive and retreive data from Gaia DR3.
+    This class contains tools to query the Gaia archive and retreive data from Gaia DR3 and 2MASS cross match.
     """
     
     def __init__(self, lvalue: float, bvalue: float, psize: float, path: str = None, proxy: tuple[str, int] = None, verbose: int = 0, name: str = None, pi: int = 1) -> None:
@@ -45,12 +45,18 @@ class Findgaia():
         self.host = "gea.esac.esa.int"
         self.port = 443
         self.pathinfo = "/tap-server/tap/async"
-        self.query = "SELECT source_id, phot_bp_mean_mag, phot_bp_mean_flux_over_error, \
-                phot_g_mean_mag, phot_g_mean_flux_over_error,\
-                phot_rp_mean_mag, phot_rp_mean_flux_over_error, \
-                parallax, parallax_error ,l, b, nu_eff_used_in_astrometry, pseudocolour, ecl_lat, astrometric_params_solved\
-                FROM gaiadr3.gaia_source \
-                WHERE "
+        self.query = "SELECT gaia.source_id, gaia.phot_bp_mean_mag, gaia.phot_bp_mean_flux_over_error, \
+                gaia.phot_g_mean_mag, gaia.phot_g_mean_flux_over_error, gaia.phot_rp_mean_mag, \
+                gaia.phot_rp_mean_flux_over_error, gaia.parallax, gaia.parallax_error, gaia.l, gaia.b, \
+                gaia.nu_eff_used_in_astrometry, gaia.pseudocolour, gaia.ecl_lat, gaia.astrometric_params_solved, \
+                tmass.j_m, tmass.j_msigcom, tmass.h_m, tmass.h_msigcom, tmass.ks_m , tmass.ks_msigcom \
+                FROM gaiadr3.gaia_source AS gaia \
+                JOIN gaiadr3.tmass_psc_xsc_best_neighbour AS xmatch USING (source_id) \
+                JOIN gaiadr3.tmass_psc_xsc_join AS xjoin USING (clean_tmass_psc_xsc_oid) \
+                JOIN gaiadr1.tmass_original_valid AS tmass ON \
+                xjoin.original_psc_source_id = tmass.designation \
+                WHERE \
+                tmass.ext_key IS NULL AND "
         self.lvalue = lvalue
         self.bvalue = bvalue
         self.path = path
@@ -84,8 +90,8 @@ class Findgaia():
             pd.DataFrame: Dataframe containing the data
         """
 
-        zone = f"gaiadr3.gaia_source.l BETWEEN {lmin} AND {lmax} \
-                 AND gaiadr3.gaia_source.b BETWEEN {self.bvalue - self.psize/2} AND {self.bvalue + self.psize/2}"
+        zone = f"gaia.l BETWEEN {lmin} AND {lmax} \
+                 AND gaia.b BETWEEN {self.bvalue - self.psize/2} AND {self.bvalue + self.psize/2}"
             
         query = self.query + zone
 
@@ -219,7 +225,8 @@ class Findgaia():
         # Remove rows containing at least one nan value
         data = data[data["phot_g_mean_mag"].notna() & data["phot_bp_mean_mag"].notna() & data["phot_rp_mean_mag"].notna() & data["parallax"].notna() & \
                     data["phot_bp_mean_flux_over_error"].notna() & data["phot_g_mean_flux_over_error"].notna() & data["phot_rp_mean_flux_over_error"].notna() & \
-                    data["parallax_error"].notna()]
+                    data["parallax_error"].notna() & \
+                    data["ks_m"].notna() & data["j_m"].notna() & data["h_m"].notna() & data["ks_msigcom"].notna() & data["j_msigcom"].notna() & data["h_msigcom"].notna()]
 
         # data = data[(data['phot_g_mean_mag'] > 8) & (data['phot_g_mean_mag'] < 17) & (data['phot_bp_mean_mag'] > 8) & (data['phot_bp_mean_mag'] < 17) & (data['phot_rp_mean_mag'] > 8) & (data['phot_rp_mean_mag'] < 17)]
 
@@ -235,15 +242,16 @@ class Findgaia():
 
         if self.filename == None:
             # Name of the output file
-            self.filename = f"{self.path}/observations_gaia_{self.bvalue:.6f}_{self.lvalue:.6f}_{self.psize:.6f}.hdf5"
+            self.filename = f"{self.path}/observations_gaia2mass_{self.bvalue:.6f}_{self.lvalue:.6f}_{self.psize:.6f}.hdf5"
         else:
             self.filename = f"{self.path}/{self.filename}"
 
         if self.filename.split('.')[-1] == 'hdf5':
             self.write_hdf5(data)
         else:
-            data = data[['phot_bp_mean_mag', 'phot_bp_mean_mag_error', 'phot_g_mean_mag', 'phot_g_mean_mag_error', 'phot_rp_mean_mag', 'phot_rp_mean_mag_error', 'parallax', 'parallax_error', 'l', 'b']]
-            np.savetxt(self.filename, data, header="BP,BP_err,G,G_err,RP,RP_err,parallax,parallax_err,l,b", delimiter=',', comments='')
+            data = data[['phot_bp_mean_mag', 'phot_bp_mean_mag_error', 'phot_g_mean_mag', 'phot_g_mean_mag_error', 'phot_rp_mean_mag', 'phot_rp_mean_mag_error', 'parallax', 'parallax_error',
+                         'j_m', 'j_msigcom', 'h_m', 'h_msigcom', 'ks_m', 'ks_msigcom', 'l', 'b']]
+            np.savetxt(self.filename, data, header="BP,BP_err,G,G_err,RP,RP_err,parallax,parallax_err,J,J_err,H,H_err,K,K_err,l,b", delimiter=',', comments='')
 
         if self.verbose:
             print('Done!')
@@ -261,6 +269,12 @@ class Findgaia():
             f.create_dataset('RP_err', data=data['phot_rp_mean_mag_error'], dtype = float)
             f.create_dataset('parallax', data=data['parallax'], dtype = float)
             f.create_dataset('parallax_err', data=data['parallax_error'], dtype = float)
+            f.create_dataset('J', data = data['j_m'], dtype = float)
+            f.create_dataset('J_err', data = data['j_msigcom'], dtype = float)
+            f.create_dataset('H', data = data['h_m'], dtype = float)
+            f.create_dataset('H_err', data = data['h_msigcom'], dtype = float)
+            f.create_dataset('K', data = data['ks_m'], dtype = float)
+            f.create_dataset('K_err', data = data['ks_msigcom'])
             f.create_dataset('l', data=data['l'], dtype = float)
             f.create_dataset('b', data=data['b'], dtype = float)
 
