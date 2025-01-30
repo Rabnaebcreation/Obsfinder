@@ -5,7 +5,7 @@ with open("README.md", "r", encoding="utf-8") as fh:
 
 setuptools.setup(
     name='obsfinder',
-    version='1.4.0',
+    version='1.5.0',
     author='Barnabé Déforêt',
     author_email='babedef@orange.fr',
     description='Tools to query 2mass and Gaia observations',
@@ -17,6 +17,7 @@ setuptools.setup(
             'pyfindgaia = obsfinder.findgaia:main',
             'pyfind2mass = obsfinder.find2mass:main',
             'pyfindgaia2mass = obsfinder.findgaia2mass:main',
+            'pyfinder = obsfinder.finder:main',
         ],
     },
     packages=['obsfinder'],

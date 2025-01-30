@@ -14,7 +14,7 @@ import time
 import csv
 import sys
 
-class Findgaia():
+class Findgaia2mass():
     """
     This class contains tools to query the Gaia archive and retreive data from Gaia DR3 and 2MASS cross match.
     """
@@ -425,7 +425,7 @@ def main() -> int:
     else:
         proxy = None
 
-    fgaia = Findgaia(lvalue = long, bvalue = latt, path = path, psize = psize, proxy = proxy, verbose = verbose, name = name, pi = pi)
+    fgaia = Findgaia2mass(lvalue = long, bvalue = latt, path = path, psize = psize, proxy = proxy, verbose = verbose, name = name, pi = pi)
     fgaia.get_obs()
 
     return 0
