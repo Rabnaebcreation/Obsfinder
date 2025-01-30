@@ -41,7 +41,7 @@ class Finder():
             self.query = Findgaia(lvalue, bvalue, psize, path, proxy, verbose, name, pi)
         elif type == '2mass':
             self.query = Find2mass(lvalue, bvalue, psize, path, proxy, verbose, name)
-        elif type == 'gaia2mass':
+        elif type == 'gaia+2mass':
             self.query = Findgaia2mass(lvalue, bvalue, psize, path, proxy, verbose, name, pi)
         else:
             raise ValueError(f"Unknown type of query: {type}")
@@ -52,7 +52,7 @@ def main() -> int:
     """
     # Arguments definition
     parser = argparse.ArgumentParser()
-    parser.add_argument('type', type = str, help = "Type of query to perform. Can be 'gaia', '2mass' or 'gaia2mass'")
+    parser.add_argument('-type', type = str, help = "Type of query to perform. Can be 'gaia', '2mass' or 'gaia2mass'")
     parser.add_argument('-l', type = float, required = True, help = "Square center value in Galactic longitude (deg)")
     parser.add_argument('-b', type = float, required = True, help = "Square center value in Galactic latitude (deg)")
     parser.add_argument('-p', type = float, required = False, help = "Pixel size (arcminute)", default = 5)
@@ -75,8 +75,8 @@ def main() -> int:
     else:
         proxy = None
 
-    ftmass = Finder(type=args.type ,lvalue = args.l, bvalue = args.b, path = args.path, psize = args.p, proxy = args.proxy, verbose = args.v, name = args.n)
-    ftmass.get_obs()
+    ftmass = Finder()
+    ftmass.get_obs(type=args.type ,lvalue = args.l, bvalue = args.b, path = args.d, psize = args.p, proxy = args.proxy, verbose = args.v, name = args.n)
 
     return 0
 
