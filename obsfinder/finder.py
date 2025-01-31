@@ -38,11 +38,11 @@ class Finder():
 
         # Define case according to the type of query
         if type == 'gaia':
-            self.query = Findgaia(lvalue, bvalue, psize, path, proxy, verbose, name, pi)
+            self.query = Findgaia(lvalue, bvalue, psize, path, proxy, verbose, name, pi).get_obs()
         elif type == '2mass':
-            self.query = Find2mass(lvalue, bvalue, psize, path, proxy, verbose, name)
+            self.query = Find2mass(lvalue, bvalue, psize, path, proxy, verbose, name).get_obs()
         elif type == 'gaia+2mass':
-            self.query = Findgaia2mass(lvalue, bvalue, psize, path, proxy, verbose, name, pi)
+            self.query = Findgaia2mass(lvalue, bvalue, psize, path, proxy, verbose, name, pi).get_obs()
         else:
             raise ValueError(f"Unknown type of query: {type}")
         
