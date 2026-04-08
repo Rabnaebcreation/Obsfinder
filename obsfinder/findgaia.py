@@ -379,7 +379,169 @@ class Findgaia():
 
         # Save observations
         self.save_obs(data)
-        
+
+
+class FindGaiaQuery():
+
+    def __init__(self, columns: str = "", path: str = None, proxy: tuple[str, int] = None, verbose: int = 0, name: str = None, lite = None) -> None:
+        """
+        Initialize the class
+
+        Args:
+            columns (str): 
+                Single column or list of columns to retreive. Columns must be defined as ["column1", "column2", ...]
+            path (str): 
+                Working directory
+            proxy (tuple[str, int], optional):
+                Proxy to use, if needed. Tuple containing the adresse of the proxy and the port to use. Default to None.
+            verbose (int, optional): 
+                Toggle verbose (1 or 0). Default to 0.
+            name (str, optional):
+                Name of the catalog. Default name is 'observations_2mass_{bvalue}_{lvalue}_{psize}'
+        """
+
+        self.host = "gea.esac.esa.int"
+        self.port = 443
+        self.pathinfo = "/tap-server/tap/async"
+
+        user_columns = ', '.join(columns)
+        self.query = f"""SELECT {user_columns}
+                        FROM gaiadr3.gaia_source{'_lite' if lite else ''}
+                        WHERE """
+
+        self.path = path
+        self.proxy = proxy
+        self.verbose = verbose
+        self.filename = name
+
+        if not self.verbose:
+            warnings.filterwarnings("ignore")
+
+        if self.path == None:
+            self.path = str(pathlib.Path().resolve())
+
+    def query_obs(self, condition: str) -> pd.DataFrame:
+        """
+        Make a query to gaia archive to retreive gaia flux in G, B and R bands
+        and their uncertainty, as well as the longitude and lattitude of each
+        source.
+        The returned data correspond to a square of size psize centered on the 
+        coordinates (lvalue, bvalue).
+
+        Args:
+            condition (str): 
+                Condition to apply to the query, for example "gaiadr3.gaia_source.l BETWEEN 10 AND 20 AND gaiadr3.gaia_source.b BETWEEN -5 AND 5"
+
+        Returns:
+            pd.DataFrame: Dataframe containing the data
+        """
+
+        query = self.query + condition
+
+        print(query)
+
+        # Encode the query
+        params = urllib.urlencode({\
+            "REQUEST": "doQuery", \
+            "LANG":    "ADQL", \
+            "FORMAT":  "csv", \
+            "PHASE":  "RUN", \
+            "JOBNAME":  "Any name (optional)", \
+            "JOBDESCRIPTION":  "Any description (optional)", \
+            "QUERY":   f"{query}"
+            })
+
+        headers = {\
+            "Content-type": "application/x-www-form-urlencoded", \
+            "Accept":       "text/plain" \
+            }
+
+        # Use proxy if needed
+        if self.proxy != None:
+            connection=httplib.HTTPSConnection(self.proxy[0], self.proxy[1])
+            connection.set_tunnel(self.host, self.port)
+        else:
+            connection=httplib.HTTPSConnection(self.host, self.port)
+
+        # Send the query
+        connection.request("POST", self.pathinfo, params, headers)
+
+        #Status
+        response = connection.getresponse()
+        if self.verbose:
+            print ("Status: " +str(response.status), "Reason: " + str(response.reason))
+
+        #Server job location (URL)
+        location = response.getheader("location")
+        if self.verbose:
+            print ("Location: " + location)
+
+        #Jobid
+        jobid = location[location.rfind('/')+1:]
+        if self.verbose:
+            print ("Job id: " + jobid)
+
+        connection.close()
+
+        # Check job status, wait until finished
+        while True:
+            # Use proxy if needed
+            if self.proxy != None:
+                connection=httplib.HTTPSConnection(self.proxy[0], self.proxy[1])
+                connection.set_tunnel(self.host, self.port)
+            else:
+                connection=httplib.HTTPSConnection(self.host, self.port)
+
+            connection.request("GET", self.pathinfo + "/" + jobid)
+            response = connection.getresponse()
+            data = response.read()
+            dom = parseString(data)
+            phaseElement = dom.getElementsByTagName('uws:phase')[0]
+            phaseValueElement = phaseElement.firstChild
+            phase = phaseValueElement.toxml()
+            if self.verbose:
+                print ("Status: " + phase)
+            #Check finished
+            if phase == 'COMPLETED': break
+
+            if phase == 'ERROR':
+                print("Critical failure: Error during the query")
+                print(data)
+                exit()
+
+            #wait and repeat
+            time.sleep(0.2)
+
+        connection.close()
+
+        # Get results
+        if self.verbose:
+            print("Retrieving data...")
+
+        # Use proxy if needed
+        if self.proxy != None:
+            connection=httplib.HTTPSConnection(self.proxy[0], self.proxy[1])
+            connection.set_tunnel(self.host, self.port)
+        else:
+            connection=httplib.HTTPSConnection(self.host, self.port)
+
+        connection.request("GET", self.pathinfo + "/" + jobid + "/results/result")
+        response = connection.getresponse()
+
+        data = response.read().decode('iso-8859-1')
+        data = data.split()
+        data = list((csv.reader(data, delimiter=',')))
+        data = pd.DataFrame(data[1:], columns = data[0])
+        data = data.replace(r'^\s*$', np.nan, regex=True)
+        # data_temp = data['source_id'].astype(int)
+        # data = data.astype(float)
+        # data['source_id'] = data_temp
+        # del data_temp
+
+        connection.close()
+
+        return data
+
 
 def main() -> int:
     """

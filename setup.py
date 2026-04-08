@@ -5,10 +5,10 @@ with open("README.md", "r", encoding="utf-8") as fh:
 
 setuptools.setup(
     name='obsfinder',
-    version='1.5.2',
+    version='1.6.0',
     author='Barnabé Déforêt',
-    author_email='babedef@orange.fr',
-    description='Tools to query 2mass and Gaia observations',
+    author_email='barnabe.deforet@gmail.com',
+    description='Tools to query 2mass and Gaia observations, as well as the simbad database.',
     long_description=long_description,
     long_description_content_type="text/markdown",
     url='https://github.com/Rabnaebcreation/Obsfinder',
@@ -18,6 +18,7 @@ setuptools.setup(
             'pyfind2mass = obsfinder.find2mass:main',
             'pyfindgaia2mass = obsfinder.findgaia2mass:main',
             'pyfinder = obsfinder.finder:main',
+            'pyfindsimbad = obsfinder.findsimbad:main'
         ],
     },
     packages=['obsfinder'],

@@ -6,6 +6,7 @@ For the moment, only 3 program can be used:
 - ```findgaia.py```: This program send a query to the Gaia archive (https://gea.esac.esa.int/archive/) to recover data from the Gaia DR3 point source catalogue in a zone define by its center and its size.
 - ```find2mass.py```: This program send a query to the NASA/IPAC Infrared Science Archive (https://irsa.ipac.caltech.edu) to recover data from the 2MASS point source catalogue in a zone define by its center and its size.
 - ```findgaia2mass.py```: This program send a query to the Gaia archive (https://gea.esac.esa.int/archive/) to recover data from a cross-match between the Gaia DR3 point source catalogue and the 2MASS point source catalogue in a zone define by its center and its size.
+- ```findsimbad.py```: This program send a query to Simbad (https://simbad.u-strasbg.fr) to get objects information given their Identifier. A pseudo cross-match with Gaia is possible. WARNING: This program is different to previous ones, as it allows for custom queries.
 
 ## Usage
 Both program work in the same way. Thay take as argments:
@@ -17,7 +18,12 @@ Both program work in the same way. Thay take as argments:
 - OPTIONAL : Name of the catalogue. Argument: ```-n```. Default to "observations_{system}_{latitude}_{longitude}_{size}.hdf5". Using any other extension as hdf5 will save the file in csv format.
 - OPTIONAL : Define the proxy to use (host:port). Argument: ```-proxy```. Default to None (no proxy).
 
-Arguments can be placed in any order. Here is an example to get Gaia DR3 data for a zone centered at longitude=45°, lattitude=1°, for a pixel zise of 5' and that save the data in the directory ```/home/user/data/```:
+
+For findsimbad, ```-d```, ```-v```, ```-n```, ```-proxy``` are available. The argument ```-id``` allows defining the Simbad identifier of the object to query. Multiple object can be queried by listing them. The ```-col``` argument can be used to define which data to recover for the object(s).
+
+Arguments can be placed in any order. 
+
+Here is an example to get Gaia DR3 data for a zone centered at longitude=45°, lattitude=1°, for a pixel zise of 5' and that save the data in the directory ```/home/user/data/```:
 ```python3 findgaia.py -l 45 -b 5 -p 5 -d /home/user/data/```
 
 ```findgaia.py``` can also be directly called within a terminal:
@@ -27,18 +33,23 @@ The same stand for ```find2mass.py```:
 As well as for ```findgaia2mass.pu```:
 ```pyfindgaia2mass -l 45 -b 5 -p 5 -d /home/user/data/```
 
+Here is a example to get the spectral type for three stars HD003360, HD031726, HD032630:
+```python3 findsimbad.py -id "HD003360, HD031726, HD032630" -col "sp_type"```
+
 The default name of the output file have the following form:
 - ```observations_gaia_{latitude}_{longitude}_{size}.hdf5``` with ```findgaia.py```
 - ```observations_2mass_{latitude}_{longitude}_{size}.hdf5``` with ```find2mass.py```
 - ```observations_gaia2mass_{latitude}_{longitude}_{size}.hdf5``` with ```findgaia2mass.py```
+- ```simbad_output.hdf5``` with ```findsimbad.py```
 
 ## Output file format
 Both files are either csv or hdf5 files. They contain the following columns/datasets:
 - Gaia: BP, BP_err, G, G_err, RP, RP_err, parallax, parallax_err, l, b,
 - 2mass: J, J_err, H_m, H_err, K_m, K_err, l, b
 - Gaia & 2MASS: BP, BP_err, G, G_err, RP, RP_err, parallax, parallax_err, J, J_err, H_m, H_err, K_m, K_err, l, b
+- Simbad: id, GaiaDR3 source id (simply named GaiaDR3)
  
- Sources with any empty column are automatically removed. Gaia parallaxes are corrected with the Lindegren et al. (2021) method.
+ Sources with any empty column are automatically removed. Gaia parallaxes are corrected with the Lindegren et al. (2021) method. These two traitements do not apply to findsymbad.
 
 ## Installation
 This package can by installed via pip:
