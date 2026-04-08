@@ -213,9 +213,6 @@ class FindSimbad():
             if col in data.columns:
                 cleaned_data[col] = data[col]
 
-
-        print(cleaned_data)
-
         return cleaned_data
 
     def save_obs(self, data: pd.DataFrame) -> None:
@@ -346,9 +343,6 @@ def main() -> int:
         proxy = (args.proxy.split(':')[0], int(args.proxy.split(':')[1]))
     else:
         proxy = None
-
-    print(ident)
-    print(columns)    
 
     fsimbad = FindSimbad(path = path, proxy = proxy, verbose = verbose, name = name, columns = columns)
     test = fsimbad.get_obs(ident)

@@ -438,8 +438,6 @@ class FindGaiaQuery():
 
         query = self.query + condition
 
-        print(query)
-
         # Encode the query
         params = urllib.urlencode({\
             "REQUEST": "doQuery", \
