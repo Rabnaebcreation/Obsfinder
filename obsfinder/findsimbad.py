@@ -15,7 +15,7 @@ class FindSimbad():
     This class contains tools to query Simbad and retreive some data given an object name.
     """
     
-    def __init__(self, columns: str = "", path: str = None, proxy: tuple[str, int] = None, verbose: int = 0, name: str = None) -> None:
+    def __init__(self, columns: str = "" ,path: str = None, proxy: tuple[str, int] = None, verbose: int = 0, name: str = None) -> None:
         """
         Initialize the class
 
@@ -41,18 +41,29 @@ class FindSimbad():
         if type(columns) == list:
             # user_columns = ', '.join(columns)
             query_columns = ', '.join(base_columns + columns)
+
+            non_basic_columns = [col for col in columns if not col.startswith("basic.")]
+            
+            if len(non_basic_columns) > 0:
+                extra_joins = " ".join([f"LEFT OUTER JOIN {col.split('.')[0]} ON {col.split('.')[0]}.oidref = basic.oid" for col in non_basic_columns])
+            else:
+                extra_joins = ""
+
+            self.query = f"""SELECT {query_columns} 
+                            FROM basic 
+                            LEFT OUTER JOIN ident ON ident.oidref = basic.oid 
+                            LEFT OUTER JOIN ids ON ids.oidref = ident.oidref
+                            {extra_joins}
+                            WHERE """
+        else:
+            query_columns = ", ".join(base_columns) + (", " + columns) * (columns != "")
             self.query = f"""SELECT {query_columns} 
                             FROM basic 
                             LEFT OUTER JOIN ident ON ident.oidref = basic.oid 
                             LEFT OUTER JOIN ids ON ids.oidref = ident.oidref 
                             WHERE """
-        else:
-            query_columns = ", ".join(base_columns) + (", " + columns) * (columns != "")
-            self.query = f"""SELECT {query_columns} 
-                            FROM basic \
-                            LEFT OUTER JOIN ident ON ident.oidref = basic.oid 
-                            LEFT OUTER JOIN ids ON ids.oidref = ident.oidref 
-                            WHERE """
+
+        print(self.query)
     
         self.path = path
         self.proxy = proxy
@@ -83,6 +94,8 @@ class FindSimbad():
             query = f"ident.id = '{identifier}'"
             
         query = self.query + query
+
+        print(query)
 
         # Encode the query
         params = urllib.urlencode({
@@ -298,7 +311,9 @@ class FindSimbad():
         # Gaia Ids
         gaia_ids = data_simbad["GaiaDR3"].dropna().unique()
         gaia_ids = [r.replace("GaiaDR3", "") for r in gaia_ids]
-        data_simbad["GaiaDR3"] = gaia_ids
+        gaia_only_simbad = data_simbad[data_simbad["GaiaDR3"].notna()]
+        gaia_only_simbad["GaiaDR3"] = gaia_ids
+        nogaia_simbad = data_simbad[data_simbad["GaiaDR3"].isna()]
 
         # Make gaia condition to get data only for those gaia ids
         gaia_condition = f"gaiadr3.gaia_source{'_lite' if lite else ''}.source_id IN ({', '.join(map(str, gaia_ids))})" + (f" AND {gaia_condition}" if gaia_condition != "" else "")
@@ -310,7 +325,10 @@ class FindSimbad():
         data_gaia = fgq.query_obs(gaia_condition)
 
         # Merge data (every simbad columns on the left, every gaia columns on the right, which already correspond to simbad 'GaiaDR3')
-        data = pd.merge(data_simbad, data_gaia, left_on='GaiaDR3', right_on='source_id')
+        data = pd.merge(gaia_only_simbad, data_gaia, left_on='GaiaDR3', right_on='source_id')
+
+        if len(nogaia_simbad) > 0:
+            data = pd.concat([data, nogaia_simbad], ignore_index=True)
 
         # Drop "source_id" column as it is the same as "GaiaDR3"
         data = data.drop(columns=['source_id'])
