@@ -1,3 +1,5 @@
+#!/usr/bin/env python3
+
 from .findgaia import Findgaia
 from .find2mass import Find2mass
 from .findgaia2mass import Findgaia2mass
@@ -43,6 +45,8 @@ class Finder():
             self.query = Find2mass(lvalue, bvalue, psize, path, proxy, verbose, name).get_obs()
         elif type == 'gaia+2mass':
             self.query = Findgaia2mass(lvalue, bvalue, psize, path, proxy, verbose, name, pi).get_obs()
+        elif type == 'simbad':
+            print("The 'simbad' type of query is not available with this command. Please use the 'pyfindsimbad' command line tool to query the simbad database.")
         else:
             raise ValueError(f"Unknown type of query: {type}")
         

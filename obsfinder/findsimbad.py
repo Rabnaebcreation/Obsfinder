@@ -40,12 +40,14 @@ class FindSimbad():
 
         if type(columns) == list:
             # user_columns = ', '.join(columns)
-            query_columns = ', '.join(base_columns + columns)
+            columns = [col.strip() for col in columns]
+            query_columns = ','.join(base_columns + columns)
 
-            non_basic_columns = [col for col in columns if not col.startswith("basic.")]
-            
+            non_basic_columns = [col.split('.')[0] for col in columns if not col.startswith("basic.")]
+            non_basic_columns = np.unique(non_basic_columns)
+
             if len(non_basic_columns) > 0:
-                extra_joins = " ".join([f"LEFT OUTER JOIN {col.split('.')[0]} ON {col.split('.')[0]}.oidref = basic.oid" for col in non_basic_columns])
+                extra_joins = "\n ".join([f"LEFT OUTER JOIN {col} ON {col}.oidref = basic.oid" for col in non_basic_columns])
             else:
                 extra_joins = ""
 
@@ -62,8 +64,6 @@ class FindSimbad():
                             LEFT OUTER JOIN ident ON ident.oidref = basic.oid 
                             LEFT OUTER JOIN ids ON ids.oidref = ident.oidref 
                             WHERE """
-
-        print(self.query)
     
         self.path = path
         self.proxy = proxy
@@ -89,13 +89,12 @@ class FindSimbad():
         """
 
         if type(identifier) == list:
+            identifier = [id.strip() for id in identifier]
             query = " OR ".join([f"ident.id = '{id}'" for id in identifier])
         else:
             query = f"ident.id = '{identifier}'"
             
         query = self.query + query
-
-        print(query)
 
         # Encode the query
         params = urllib.urlencode({
