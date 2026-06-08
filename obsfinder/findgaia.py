@@ -14,6 +14,55 @@ import time
 import csv
 import sys
 
+def correct_parallaxes(data: pd.DataFrame) -> pd.DataFrame:
+
+    zpt.load_tables()
+    zero_point = zpt.get_zpt(data["phot_g_mean_mag"], data["nu_eff_used_in_astrometry"],
+            data["pseudocolour"],data["ecl_lat"],
+            data["astrometric_params_solved"], _warnings=True)
+
+    data["parallax"] -= zero_point
+
+    return data
+
+def mag_uncertainty(flux_over_error: float) -> float:
+    """
+    Compute the uncertainty on the magnitude given the flux, its uncertainty and the zero point uncertainty.
+    Args:
+        flux_over_error (float): flux over its error
+
+    Returns:
+        float: uncertainty on the magnitude
+    """
+
+    return (2.5/np.log(10)) * (1/flux_over_error)
+
+def attach_mag_uncertainty(data: pd.DataFrame) -> pd.DataFrame:
+    """
+    Attach the uncertainty on the magnitudes to the observationnal data
+
+    Args:
+        data (pd.DataFrame): Data to attach the uncertainty on the magnitudes for each band
+    
+    Returns:
+        pd.DataFrame: Data with the uncertainty on the magnitudes for each band
+    """
+
+    # Compute the uncertainty on the magnitude
+    if 'phot_bp_mean_flux_over_error' in data.columns:
+        data['phot_bp_mean_flux_over_error'] = mag_uncertainty(data['phot_bp_mean_flux_over_error'].astype(float))
+        data.rename(columns={'phot_bp_mean_flux_over_error': 'phot_bp_mean_mag_error'}, inplace=True)
+
+    if 'phot_g_mean_flux_over_error' in data.columns:
+        data['phot_g_mean_flux_over_error'] = mag_uncertainty(data['phot_g_mean_flux_over_error'].astype(float))
+        data.rename(columns={'phot_g_mean_flux_over_error': 'phot_g_mean_mag_error'}, inplace=True)
+
+    if 'phot_rp_mean_flux_over_error' in data.columns:
+        data['phot_rp_mean_flux_over_error'] = mag_uncertainty(data['phot_rp_mean_flux_over_error'].astype(float))
+        data.rename(columns={'phot_rp_mean_flux_over_error': 'phot_rp_mean_mag_error'}, inplace=True)
+
+    return data
+
 class Findgaia():
     """
     This class contains tools to query the Gaia archive and retreive data from Gaia DR3.
@@ -291,55 +340,6 @@ class Findgaia():
         output = data['phot_g_mean_mag'] < maglim[healpix_idx, percentile + 1]
 
         return output
-    
-    def mag_uncertainty(self, flux_over_error: float) -> float:
-        """
-        Compute the uncertainty on the magnitude given the flux, its uncertainty and the zero point uncertainty.
-        Args:
-            flux_over_error (float): flux over its error
-
-        Returns:
-            float: uncertainty on the magnitude
-        """
-
-        # return np.sqrt((-2.5 / np.log(10) * flux_err / flux)**2 + zero_point_err**2)
-        return (2.5/np.log(10)) * (1/flux_over_error)
-    
-    def attach_mag_uncertainty(self, data: pd.DataFrame) -> pd.DataFrame:
-        """
-        Attach the uncertainty on the magnitudes to the observationnal data
-
-        Args:
-            data (pd.DataFrame): Data to attach the uncertainty on the magnitudes for each band
-        
-        Returns:
-            pd.DataFrame: Data with the uncertainty on the magnitudes for each band
-        """
-
-        if self.verbose:
-            print("Attaching magnitude uncertainty to each band...")
-
-        # Compute the uncertainty on the magnitude
-        data['phot_bp_mean_flux_over_error'] = self.mag_uncertainty(data['phot_bp_mean_flux_over_error'])
-        data['phot_g_mean_flux_over_error'] = self.mag_uncertainty(data['phot_g_mean_flux_over_error'])
-        data['phot_rp_mean_flux_over_error'] = self.mag_uncertainty(data['phot_rp_mean_flux_over_error'])
-
-        data.rename(columns={'phot_bp_mean_flux_over_error': 'phot_bp_mean_mag_error', \
-                            'phot_g_mean_flux_over_error': 'phot_g_mean_mag_error', \
-                            'phot_rp_mean_flux_over_error': 'phot_rp_mean_mag_error'}, inplace=True)
-
-        return data
-    
-    def correct_parallaxes(self, data: pd.DataFrame) -> pd.DataFrame:
-
-        zpt.load_tables()
-        zero_point = zpt.get_zpt(data["phot_g_mean_mag"], data["nu_eff_used_in_astrometry"],
-                   data["pseudocolour"],data["ecl_lat"],
-                   data["astrometric_params_solved"], _warnings=True)
-
-        data["parallax"] -= zero_point
-
-        return data
         
     def get_obs(self) -> None:
         """
@@ -375,7 +375,7 @@ class Findgaia():
 
         if self.pi:
             # Correct parallaxes offset
-            data = self.correct_parallaxes(data)
+            data = correct_parallaxes(data)
 
         # Save observations
         self.save_obs(data)
@@ -383,7 +383,10 @@ class Findgaia():
 
 class FindGaiaQuery():
 
-    def __init__(self, columns: str = "", path: str = None, proxy: tuple[str, int] = None, verbose: int = 0, name: str = None, lite = None) -> None:
+    def __init__(self, columns: str = "", path: str = None, proxy: tuple[str, int] = None, verbose: int = 0, name: str = None,
+                lite = None,
+                correct_parallax: bool = True,
+                get_mag_uncertainty: bool = False) -> None:
         """
         Initialize the class
 
@@ -405,6 +408,22 @@ class FindGaiaQuery():
         self.pathinfo = "/tap-server/tap/async"
 
         user_columns = ', '.join(columns)
+
+        if correct_parallax and "parallax" in columns:
+            user_columns += ", nu_eff_used_in_astrometry, pseudocolour, ecl_lat, astrometric_params_solved"
+
+        self.get_mag_uncertainty = get_mag_uncertainty
+
+        if self.get_mag_uncertainty:
+            if "phot_bp_mean_mag" in columns:
+                user_columns += ", phot_bp_mean_flux_over_error"
+            if "phot_g_mean_mag" in columns:
+                user_columns += ", phot_g_mean_flux_over_error"
+            if "phot_rp_mean_mag" in columns:
+                user_columns += ", phot_rp_mean_flux_over_error"
+            if "phot_bp_mean_mag" not in columns and "phot_g_mean_mag" not in columns and "phot_rp_mean_mag" not in columns:
+                self.get_mag_uncertainty = False
+            
         self.query = f"""SELECT {user_columns}
                         FROM gaiadr3.gaia_source{'_lite' if lite else ''}
                         WHERE """
@@ -419,6 +438,8 @@ class FindGaiaQuery():
 
         if self.path == None:
             self.path = str(pathlib.Path().resolve())
+
+        self.correct_parallax = correct_parallax
 
     def query_obs(self, condition: str) -> pd.DataFrame:
         """
@@ -537,6 +558,22 @@ class FindGaiaQuery():
         # del data_temp
 
         connection.close()
+
+        if self.get_mag_uncertainty:
+            data = attach_mag_uncertainty(data)
+
+        if self.correct_parallax:
+            data = correct_parallaxes(data)
+
+            # Remove columns used for parallax correction if they are not in the user requested columns
+            if "nu_eff_used_in_astrometry" not in columns:
+                data.drop(columns=["nu_eff_used_in_astrometry"], inplace=True)
+            if "pseudocolour" not in columns:
+                data.drop(columns=["pseudocolour"], inplace=True)
+            if "ecl_lat" not in columns:
+                data.drop(columns=["ecl_lat"], inplace=True)
+            if "astrometric_params_solved" not in columns:
+                data.drop(columns=["astrometric_params_solved"], inplace=True)
 
         return data
 

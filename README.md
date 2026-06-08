@@ -19,7 +19,11 @@ Both program work in the same way. Thay take as argments:
 - OPTIONAL : Define the proxy to use (host:port). Argument: ```-proxy```. Default to None (no proxy).
 
 
-For findsimbad, ```-d```, ```-v```, ```-n```, ```-proxy``` are available. The argument ```-id``` allows defining the Simbad identifier of the object to query. Multiple object can be queried by listing them. The ```-col``` argument can be used to define which data to recover for the object(s).
+For findsimbad, ```-d```, ```-v```, ```-n```, ```-proxy``` are available. Ohter arguments are:
+- REQUIRED: Simbad identifier of the object to query. Argument: ```-id```.
+- OPTIONAL: Columns to retreive from simbad, in addition to the default columns 'ident.id'. Columns must be defined as 'column1, column2, ...'". Argument: ```-col```. Empty by default.
+- OPTIONAL: Columns to retreive from gaia, Must be defined as 'column1, column2, ...'". Argument: ```-gaia```. Empty by default.
+- OPTIONAL: Magnitude bands to retreive from simbad. Must be defined as 'band1, band2, ...'". Argument: ```-mag```. Empty by default.
 
 Arguments can be placed in any order. 
 
@@ -33,8 +37,8 @@ The same stand for ```find2mass.py```:
 As well as for ```findgaia2mass.pu```:
 ```pyfindgaia2mass -l 45 -b 5 -p 5 -d /home/user/data/```
 
-Here is a example to get the spectral type for three stars HD003360, HD031726, HD032630:
-```python3 findsimbad.py -id "HD003360, HD031726, HD032630" -col "sp_type"```
+Here is a example to get the effective temperature and surface gravity for three stars HD003360, HD031726, HD032630:
+```python3 findsimbad.py -id "HD003360, HD031726, HD032630" -col "mesFe_H.teff, mesFe_H.log_g"```
 
 The default name of the output file have the following form:
 - ```observations_gaia_{latitude}_{longitude}_{size}.hdf5``` with ```findgaia.py```
@@ -43,13 +47,13 @@ The default name of the output file have the following form:
 - ```simbad_output.hdf5``` with ```findsimbad.py```
 
 ## Output file format
-Both files are either csv or hdf5 files. They contain the following columns/datasets:
+Both files are either csv or hdf5 files. They contain the following columns/datasets by default:
 - Gaia: BP, BP_err, G, G_err, RP, RP_err, parallax, parallax_err, l, b,
 - 2mass: J, J_err, H_m, H_err, K_m, K_err, l, b
 - Gaia & 2MASS: BP, BP_err, G, G_err, RP, RP_err, parallax, parallax_err, J, J_err, H_m, H_err, K_m, K_err, l, b
 - Simbad: id, GaiaDR3 source id (simply named GaiaDR3)
  
- Sources with any empty column are automatically removed. Gaia parallaxes are corrected with the Lindegren et al. (2021) method. These two traitements do not apply to findsymbad.
+ Sources with any empty column are automatically removed. Gaia parallaxes are corrected with the Lindegren et al. (2021) method. These two traitements do not apply to findsymbad (the parallax correction can be activated, but might not always work)
 
 ## Installation
 This package can by installed via pip:
