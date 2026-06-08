@@ -59,7 +59,6 @@ class FindSimbad():
         extra_joins = ""
 
         if mag != "":
-            print(mag)
             # mag_column = mag.strip()
             extra_joins = """\n LEFT OUTER JOIN flux ON flux.oidref = basic.oid\n
                             LEFT OUTER JOIN filter on filter.filtername = flux.filter\n"""
@@ -128,8 +127,6 @@ class FindSimbad():
             query = f"ident.id = '{identifier}'"
             
         query = self.query + query
-
-        print(query)
 
         # Encode the query
         params = urllib.urlencode({
@@ -345,10 +342,7 @@ class FindSimbad():
         # Clean data
         data = self.clean_obs(data)
 
-        print(data)
-
         # Save observations
-        # self.save_obs(data)
         self.save_obs(data)
 
     def get_obs_with_gaia(self, identifier, gaia_columns: list, gaia_condition: str = "", lite: bool = True, correct_parallax: bool = False,
