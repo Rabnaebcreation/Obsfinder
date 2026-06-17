@@ -283,6 +283,11 @@ class FindSimbad():
         else:
             new_cleaned_data = cleaned_data
 
+
+        for col in new_cleaned_data.columns:
+            if isinstance(new_cleaned_data[col].iloc[0], list):
+                new_cleaned_data[col] = new_cleaned_data[col].apply(lambda x: _compact_values(x) if isinstance(x, list) else x)
+
         return new_cleaned_data
         
     def write_hdf5(self, data: pd.DataFrame) -> None:
@@ -323,6 +328,25 @@ class FindSimbad():
         else:
             # Save observations
             self.save_obs(data)
+
+    def convert_str_to_float(self, data: pd.DataFrame):
+        """
+        Convert columns in the DataFrame that are strings but represent numeric values to float.
+
+        Args:
+            data (pd.DataFrame): DataFrame to convert
+
+        Returns:
+            pd.DataFrame: DataFrame with converted columns
+        """
+        for column in data.columns:
+            if pd.api.types.is_string_dtype(data[column]):
+                try:
+                    data[column] = pd.to_numeric(data[column], errors='raise')
+                except ValueError:
+                    # If conversion fails, keep the column as string
+                    continue
+        return data
 
     def get_obs_with_gaia(self, identifier, gaia_columns: list, gaia_condition: str = "", lite: bool = True, correct_parallax: bool = False,
                             get_mag_uncertainty: bool = True, return_data: bool = False) -> pd.DataFrame:
@@ -404,6 +428,8 @@ class FindSimbad():
                             gaia_values = data_gaia[data_gaia["source_id"] == gaia_obj_id][column].dropna().unique().tolist()
                             if len(gaia_values) > 0:
                                 data_obs.at[obj_idx, column] = _compact_values(gaia_values)
+
+        data_obs = self.convert_str_to_float(data_obs)
 
         if return_data:
             return data_obs
