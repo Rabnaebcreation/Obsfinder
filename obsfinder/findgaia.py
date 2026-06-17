@@ -341,9 +341,15 @@ class Findgaia():
 
         return output
         
-    def get_obs(self) -> None:
+    def get_obs(self, return_data: bool = False) -> None:
         """
         Complete function to get the observationnal data
+
+        Args:
+            return_data (bool): Whether to return the data or save it directly. Default is False
+
+        Returns:
+            pd.DataFrame: DataFrame with one row per object. Columns with multiple values are stored as lists. Only returned if return_data is True
         """
 
         # If longitude zone definition contains negative and positive longitudes
@@ -377,8 +383,11 @@ class Findgaia():
             # Correct parallaxes offset
             data = correct_parallaxes(data)
 
-        # Save observations
-        self.save_obs(data)
+        if return_data:
+            return data
+        else:
+            # Save observations
+            self.save_obs(data)
 
 
 class FindGaiaQuery():

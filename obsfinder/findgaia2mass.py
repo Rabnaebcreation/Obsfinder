@@ -355,9 +355,15 @@ class Findgaia2mass():
 
         return data
         
-    def get_obs(self) -> None:
+    def get_obs(self, return_data: bool = False) -> None:
         """
         Complete function to get the observationnal data
+
+        Args:
+            return_data (bool): Whether to return the data or save it directly. Default is False
+
+        Returns:
+            pd.DataFrame: DataFrame with one row per object. Columns with multiple values are stored as lists. Only returned if return_data is True
         """
 
         # If longitude zone definition contains negative and positive longitudes

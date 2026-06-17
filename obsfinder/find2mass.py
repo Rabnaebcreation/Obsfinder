@@ -213,9 +213,15 @@ class Find2mass():
 
         print(f"2mass obs saved in {self.filename}")
 
-    def get_obs(self) -> None:
+    def get_obs(self, return_data: bool = False) -> None:
         """
         Complete function to get the observationnal data
+
+        Args:
+            return_data (bool): Whether to return the data or save it directly. Default is False
+
+        Returns:
+            pd.DataFrame: DataFrame with one row per object. Columns with multiple values are stored as lists. Only returned if return_data is True
         """
 
         # If longitude zone definition contains negative and positive longitudes
@@ -242,8 +248,11 @@ class Find2mass():
         # Clean observations
         data = self.clean_obs(data)
 
-        # Save observations
-        self.save_obs(data)
+        if return_data:
+            return data
+        else:
+            # Save observations
+            self.save_obs(data)
         
     def write_hdf5(self, data: pd.DataFrame) -> None:
         with h5py.File(self.filename, 'w') as f:

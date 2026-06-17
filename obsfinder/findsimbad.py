@@ -284,31 +284,6 @@ class FindSimbad():
             new_cleaned_data = cleaned_data
 
         return new_cleaned_data
-
-    # def save_obs(self, data: pd.DataFrame) -> None:
-    #     """
-    #     Save the observationnal data
-
-    #     Args:
-    #         data (pd.DataFrame): Data to save
-    #     """
-
-    #     if self.filename == None:
-    #         # Name of the output file
-    #         self.filename = f"{self.path}/simbad_output.hdf5"
-    #     else:
-    #         self.filename = f"{self.path}/{self.filename}"
-
-    #     if self.filename.split('.')[-1] == 'hdf5':
-    #         self.write_hdf5(data)
-    #         # data.to_hdf(self.filename, key = 'data', mode = 'w')
-    #     else:
-    #         # np.savetxt(self.filename, data, header="J,J_err,H,H_err,K,K_err,l,b", delimiter=',', comments='')
-    #         data.to_csv(self.filename, index = False)
-
-    #     if self.verbose:
-    #         print('Done!')
-    #         print(f"Nb sources: {len(data)}")
         
     def write_hdf5(self, data: pd.DataFrame) -> None:
         """
@@ -328,12 +303,13 @@ class FindSimbad():
                 else:
                     f.create_dataset(column, data=series.to_numpy())
 
-    def get_obs(self, identifier) -> None:
+    def get_obs(self, identifier, return_data: bool = False) -> None:
         """
         Complete function to get the data from simbad
 
         Args:
             identifier (str): Object name to query, or list of object names to query. If list, object must be defined as ["object1", "object2", ...]
+            return_data (bool): Whether to return the data or save it directly. Default is False.
         """
 
         # Get data
@@ -342,11 +318,14 @@ class FindSimbad():
         # Clean data
         data = self.clean_obs(data)
 
-        # Save observations
-        self.save_obs(data)
+        if return_data:
+            return data
+        else:
+            # Save observations
+            self.save_obs(data)
 
     def get_obs_with_gaia(self, identifier, gaia_columns: list, gaia_condition: str = "", lite: bool = True, correct_parallax: bool = False,
-                            get_mag_uncertainty: bool = True) -> pd.DataFrame:
+                            get_mag_uncertainty: bool = True, return_data: bool = False) -> pd.DataFrame:
         """
         Complete function to get the data from simbad and gaia
 
@@ -354,9 +333,11 @@ class FindSimbad():
             identifier (str): Object name to query, or list of object names to query. If list, object must be defined as ["object1", "object2", ...]
             gaia_columns (list): List of columns to retreive from gaia, in addition to the source_id column which is necessary for the merge with simbad data.
             gaia_condition (str): Condition to apply to the gaia query, in addition to the condition on the gaia source_id. 
-            lite (bool): Whether to use the lite version of the Gaia catalog
+            lite (bool): Whether to use the lite version of the Gaia catalog. Default is True.
             correct_parallax (bool): Whether to correct the parallax values following the method described in Lindegren et al. (2021). Needed values for the 
-                                     correction are automatically retreived, but not saved.
+                                     correction are automatically retreived, but not saved. Default is False.
+            get_mag_uncertainty (bool): Whether to retreive the uncertainty on the magnitude values. If False, only the magnitude values are retreived. Default is True.
+            return_data (bool): Whether to return the data or save it directly. Default if False.
 
         Returns:
             pd.DataFrame: DataFrame with one row per object. Columns with multiple values are stored as lists.
@@ -424,7 +405,11 @@ class FindSimbad():
                             if len(gaia_values) > 0:
                                 data_obs.at[obj_idx, column] = _compact_values(gaia_values)
 
-        self.save_obs(data_obs)
+        if return_data:
+            return data_obs
+        else:
+            self.save_obs(data_obs)
+
 
     def save_obs(self, data: pd.DataFrame, filename: str = None) -> None:
         """
