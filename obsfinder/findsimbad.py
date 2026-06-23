@@ -75,8 +75,7 @@ class FindSimbad():
             # user_columns = ', '.join(columns)
             columns = [col.strip() for col in columns]
             query_columns = ','.join(base_columns + columns + mag_columns)
-
-            non_basic_columns = [col.split('.')[0] for col in columns if not col.startswith("basic.")]
+            non_basic_columns = [col.split('.')[0] for col in columns if not (col.startswith("basic.") | col.startswith("ident.") | col.startswith("ids."))]
             non_basic_columns = np.unique(non_basic_columns)
 
             if len(non_basic_columns) > 0:
@@ -89,7 +88,7 @@ class FindSimbad():
                             {extra_joins}
                             WHERE """
         else:
-            query_columns = ", ".join(base_columns) + (", " + columns) * (columns != "") + (", " + mag_columns) * (len(self.mag) > 0)
+            query_columns = ", ".join(base_columns) + (", " + columns) * (columns != "") + (", " + ", ".join(mag_columns))*(len(self.mag) > 0) #(", " + mag_columns) * (len(self.mag) > 0)
             self.query = f"""SELECT {query_columns} 
                             FROM basic 
                             LEFT OUTER JOIN ident ON ident.oidref = basic.oid 
@@ -127,6 +126,8 @@ class FindSimbad():
             query = f"ident.id = '{identifier}'"
             
         query = self.query + query
+
+        print(query)
 
         # Encode the query
         params = urllib.urlencode({
@@ -251,10 +252,10 @@ class FindSimbad():
         gaia_ids = data["ids"].apply(lambda x: next((item for item in str(x).split('|') if "GaiaDR3" in item), None))
         cleaned_data['GaiaDR3'] = gaia_ids
         
-        # Add user-defined columns
+        # Add user-defined columns if not all NaN
         for col in columns_to_keep:
-            if col in data.columns:
-                cleaned_data[col] = data[col]
+            if (col in data.columns) & (not data[col].isnull().all()):
+                    cleaned_data[col] = data[col]
 
         # Clean duplicates due to one row per magnitude for simbad query
         if "filtername" in cleaned_data.columns and len(self.mag) > 0:
@@ -282,7 +283,6 @@ class FindSimbad():
             new_cleaned_data = new_cleaned_data[ordered]
         else:
             new_cleaned_data = cleaned_data
-
 
         for col in new_cleaned_data.columns:
             if isinstance(new_cleaned_data[col].iloc[0], list):
@@ -379,6 +379,8 @@ class FindSimbad():
 
         # Get data from simbad
         data_simbad = self.query_obs(identifier)
+
+        print(data_simbad)
 
         # Clean data
         data_simbad = self.clean_obs(data_simbad)
