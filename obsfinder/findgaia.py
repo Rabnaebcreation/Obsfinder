@@ -377,7 +377,7 @@ class Findgaia():
         data = self.clean_obs(data)
 
         # Attach magnitudes uncertainties
-        data = self.attach_mag_uncertainty(data)
+        data = attach_mag_uncertainty(data)
 
         if self.pi:
             # Correct parallaxes offset
