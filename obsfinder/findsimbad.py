@@ -266,7 +266,8 @@ class FindSimbad():
                 index=key_cols,
                 columns="filtername",
                 values=["flux", "flux_err"],
-                aggfunc="first"
+                aggfunc="first",
+                dropna=False
             )
 
             # Flatten MultiIndex columns: ('flux','J') -> 'J', ('flux_err','J') -> 'J_err'
@@ -380,14 +381,17 @@ class FindSimbad():
         # Get data from simbad
         data_simbad = self.query_obs(identifier)
 
-        print(data_simbad)
-
         # Clean data
         data_simbad = self.clean_obs(data_simbad)
 
         # Gaia Ids
-        gaia_ids = data_simbad["GaiaDR3"].dropna().unique()
-        gaia_ids = [r.replace("GaiaDR3", "") for r in gaia_ids]
+        try:
+            gaia_ids = data_simbad["GaiaDR3"].dropna().unique()
+            gaia_ids = [r.replace("GaiaDR3", "") for r in gaia_ids]
+        except KeyError:
+            if self.verbose:
+                print("Warning: No GaiaDR3 column found in the data.")
+            gaia_ids = []
 
         object_rows = []
         for obj_id, group in data_simbad.groupby("id", sort=False):
