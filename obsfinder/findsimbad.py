@@ -410,6 +410,7 @@ class FindSimbad():
         data_obs = pd.DataFrame(object_rows)
 
         if len(gaia_ids) == 0:
+            data_obs = self.convert_str_to_float(data_obs)
             return data_obs
 
         # Make gaia condition to get data only for those gaia ids
@@ -422,6 +423,7 @@ class FindSimbad():
         data_gaia = fgq.query_obs(gaia_condition)
 
         if data_gaia.empty:
+            data_obs = self.convert_str_to_float(data_obs)
             return data_obs
 
         # Add the Gaia data to each object
