@@ -51,7 +51,8 @@ class FindSimbad():
                 Name of the catalog. Default name is 'observations_2mass_{bvalue}_{lvalue}_{psize}'
         """
 
-        self.host = "simbad.u-strasbg.fr"
+        # self.host = "simbad.u-strasbg.fr"
+        self.host="simbad.cfa.harvard.edu"
         self.port = 443
         self.pathinfo = "/simbad/sim-tap/async"
 
